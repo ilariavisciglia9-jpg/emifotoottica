@@ -1,0 +1,26 @@
+# Variabili d'ambiente / segreti (NON committare mai)
+.env
+.env.*
+*.env
+secrets.*
+config.local.*
+
+# Dipendenze
+node_modules/
+package-lock.json
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Log e temporanei
+*.log
+tmp/
+.cache/
