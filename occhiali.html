@@ -281,8 +281,8 @@
     // Precarica immagini
     const glassImgs = glasses.map(g => {
       const im = new Image();
-      im.crossOrigin = 'anonymous';
       im.src = g.img;
+      im.onerror = () => console.error('Impossibile caricare l\'immagine occhiali:', g.img);
       return im;
     });
 
