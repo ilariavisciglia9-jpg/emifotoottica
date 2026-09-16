@@ -6,7 +6,7 @@
   <title>EmiFotoOttica Roma Occhiali e Servizi Fotografici</title>
   <meta name="description" content="EmiFotoOttica a Roma: occhiali di marca Ray-Ban, RH+, Max Mara, Guess, Burberry, Polar e servizi fotografici personalizzati. Stampa su tela, tazze, gadget. Dal 1960.">
   <meta name="keywords" content="ottica Roma, occhiali da sole Roma, Ray-Ban Roma, Guess occhiali, Burberry occhiali, stampa foto Roma, foto su tela Roma, EmiFotoOttica">
-  <meta property="og:title" content="EmifotoOttica Roma – Ottica &amp; Fotografia dal 1960">
+  <meta property="og:title" content="EmiFotoOttica Roma – Ottica &amp; Fotografia dal 1960">
   <meta property="og:description" content="Occhiali delle migliori marche e servizi fotografici personalizzati a Roma. Prova virtuale occhiali online.">
   <meta property="og:type" content="website">
   <link rel="canonical" href="https://www.emifotoottica.it/">
@@ -66,32 +66,10 @@
   <section style="background:var(--navy);padding:3rem 0;">
     <div class="container">
       <div class="grid-4">
-        <div class="stat-block"><div class="stat-block__num">60+</div><div class="stat-block__label">Anni di esperienza</div></div>
+        <div class="stat-block"><div class="stat-block__num">40+</div><div class="stat-block__label">Anni di esperienza</div></div>
         <div class="stat-block"><div class="stat-block__num">11+</div><div class="stat-block__label">Marchi selezionati</div></div>
         <div class="stat-block"><div class="stat-block__num">1000+</div><div class="stat-block__label">Clienti soddisfatti</div></div>
         <div class="stat-block"><div class="stat-block__num">100+</div><div class="stat-block__label">Servizi fotografici</div></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- NOVITA': OCCHIALI DA VISTA -->
-  <section style="padding:5rem 0;background:var(--card);">
-    <div class="container">
-      <div class="mission-grid">
-        <div class="mission-img reveal">
-          <img src="oc1.png" alt="Nuova collezione di occhiali da vista EmiFotoOttica Roma" loading="lazy">
-          <div class="mission-badge">Novità<br>in negozio</div>
-        </div>
-        <div class="mission-content reveal" style="transition-delay:.2s">
-          <p class="eyebrow">Appena Arrivati</p>
-          <h2>Nuovi occhiali da lettura: <span class="text-gold-gradient">stile su misura</span> per il tuo sguardo</h2>
-          <p>La nuova collezione di occhiali da vista è arrivata da EmiFotoOttica: montature leggere, design contemporaneo e finiture curate nei minimi dettagli, pensate per accompagnarti ogni giorno con comfort e stile.</p>
-          <p>Vieni a provarli in negozio: il nostro team ti aiuta a trovare la montatura e le lenti più adatte a te, con una consulenza gratuita e personalizzata.</p>
-          <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
-            <a href="occhiali.html" class="btn-gold">Scopri la collezione</a>
-            <a href="contatti.html" class="btn-secondary">Prenota una prova</a>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -107,7 +85,7 @@
         <div class="mission-content reveal" style="transition-delay:.2s">
           <p class="eyebrow">Chi Siamo</p>
           <h2>La tua ottica di <span class="text-gold-gradient">fiducia</span> nel cuore di Roma</h2>
-          <p>EmiFotoOttica nasce nel 1960 dalla passione per l'ottica e la fotografia. In oltre sessant'anni di attività abbiamo costruito un rapporto autentico con i nostri clienti, accompagnandoli nella scelta degli occhiali giusti e nel dare vita ai loro ricordi più belli.</p>
+          <p>EmiFotoOttica nasce nel 1960 dalla passione per l'ottica e la fotografia. In oltre trent'anni di attività abbiamo costruito un rapporto autentico con i nostri clienti, accompagnandoli nella scelta degli occhiali giusti e nel dare vita ai loro ricordi più belli.</p>
           <p>Il nostro negozio non è solo un punto vendita: è un luogo dove ogni cliente riceve consulenza personalizzata, attenzione e cura. Conoscere le esigenze di chi entra dalla nostra porta è il primo passo per offrire davvero il meglio.</p>
           <div class="mission-values">
             <div class="mission-val">
@@ -285,5 +263,59 @@
   </script>
   <script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
   <script type="text/javascript" src="https://embeds.iubenda.com/widgets/578e9c4b-1a6f-4cc8-81ac-562520837f67.js"></script>
+
+  <!-- Popup Novità: Nuova Collezione Cuscini Personalizzati -->
+  <style>
+    .novita-popup-overlay{position:fixed;inset:0;background:rgba(8,18,32,.72);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+    .novita-popup-overlay.active{opacity:1;pointer-events:auto;}
+    .novita-popup{background:var(--card,#fff);border-radius:16px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.35);transform:translateY(20px) scale(.96);transition:transform .3s ease;}
+    .novita-popup-overlay.active .novita-popup{transform:translateY(0) scale(1);}
+    .novita-popup-close{position:absolute;top:10px;right:12px;background:rgba(0,0,0,.45);color:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;}
+    .novita-popup-close:hover{background:rgba(0,0,0,.7);}
+    .novita-popup-badge{position:absolute;top:14px;left:14px;background:var(--navy,#0a2540);color:#fff;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:20px;z-index:2;}
+    .novita-popup img{width:100%;display:block;max-height:280px;object-fit:cover;}
+    .novita-popup-body{padding:22px 24px 26px;}
+    .novita-popup-body h3{margin:0 0 10px;font-size:1.25rem;line-height:1.3;color:var(--navy,#0a2540);}
+    .novita-popup-body p{margin:0 0 14px;font-size:.95rem;line-height:1.5;color:#333;}
+    .novita-popup-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+    .novita-popup-tags span{background:var(--bg,#f4f6f8);border-radius:20px;padding:5px 12px;font-size:.8rem;color:var(--navy,#0a2540);}
+    .novita-popup-cta{display:inline-block;width:100%;text-align:center;background:var(--navy,#0a2540);color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:600;letter-spacing:.02em;box-sizing:border-box;}
+    .novita-popup-cta:hover{opacity:.9;}
+    @media (max-width:480px){.novita-popup{max-width:100%;}}
+  </style>
+  <div class="novita-popup-overlay" id="novitaPopup">
+    <div class="novita-popup">
+      <button type="button" class="novita-popup-close" id="novitaPopupClose" aria-label="Chiudi">&times;</button>
+      <span class="novita-popup-badge">Novità</span>
+      <img src="images/cuscini.jpeg" alt="Nuova collezione di cuscini personalizzati con tasca porta foto">
+      <div class="novita-popup-body">
+        <h3>Nuova Collezione: Cuscini Speciali per Persone Speciali! ❤️</h3>
+        <p>Un'idea regalo unica: cuscini morbidi e personalizzabili, con tasca per la foto. Perfetti per i nonni più dolci, per la mamma e per il papà.</p>
+        <div class="novita-popup-tags">
+          <span>📷 Con tasca la foto</span>
+          <span>✨ Morbidi e personalizzabili</span>
+          <span>💝 Idea regalo unica</span>
+        </div>
+        <a href="gadget.html" class="novita-popup-cta" id="novitaPopupCta">Scopri i dettagli →</a>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      var overlay = document.getElementById('novitaPopup');
+      var closeBtn = document.getElementById('novitaPopupClose');
+      if(!overlay) return;
+      function closePopup(){ overlay.classList.remove('active'); }
+      function openPopup(){
+        if(sessionStorage.getItem('novitaCusciniPopupShown')) return;
+        overlay.classList.add('active');
+        sessionStorage.setItem('novitaCusciniPopupShown','1');
+      }
+      closeBtn.addEventListener('click', closePopup);
+      overlay.addEventListener('click', function(e){ if(e.target === overlay) closePopup(); });
+      document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closePopup(); });
+      setTimeout(openPopup, 1200);
+    })();
+  </script>
 </body>
 </html>
