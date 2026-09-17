@@ -36,7 +36,7 @@
 .site-header__burger.open span:nth-child(2){opacity:0;}
 .site-header__burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
-.mobile-nav{display:none;position:fixed;top:var(--header-h);left:0;right:0;bottom:0;background:var(--navy,#0a1526);overflow-y:auto;padding:1rem 1.25rem 2rem;z-index:999;}
+.mobile-nav{display:none;position:fixed;top:var(--header-h);left:0;right:0;bottom:0;background:var(--navy,#fff);overflow-y:auto;padding:1rem 1.25rem 2rem;z-index:999;}
 .mobile-nav.open{display:block;}
 .mobile-nav__link{display:block;padding:.9rem .25rem;color:#fff;text-decoration:none;font-weight:600;font-size:1rem;border-bottom:1px solid rgba(255,255,255,.08);}
 .mobile-nav__toggle{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;color:#fff;font-weight:600;font-size:1rem;padding:.9rem .25rem;border-bottom:1px solid rgba(255,255,255,.08);cursor:pointer;font-family:inherit;}
