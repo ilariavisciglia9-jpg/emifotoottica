@@ -1,0 +1,34 @@
+/* EmiFotoOttica – sezione 3D occhiali (scroll) */
+.glasses-scroll{display:none;position:relative;height:520vh;background:var(--navy,#0a2540);}
+.glasses-scroll.ready{display:block;}
+.glasses-sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 42%, rgba(201,162,75,.18), transparent 70%),
+    linear-gradient(180deg, var(--navy,#0a2540) 0%, #06182b 100%);}
+.glasses-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+.glasses-copy{position:absolute;left:0;right:0;bottom:9vh;height:11rem;padding:0 1.25rem;text-align:center;pointer-events:none;}
+.gl-step{position:absolute;left:0;right:0;bottom:0;opacity:0;transform:translateY(18px);
+  transition:opacity .6s ease, transform .6s ease;}
+.gl-step.on{opacity:1;transform:none;}
+.gl-eyebrow{font-family:var(--font-b,system-ui,sans-serif);font-size:.78rem;font-weight:600;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--gold,#c9a24b);margin:0 0 .8rem;}
+.gl-title{font-family:var(--font-h,Georgia,serif);font-size:clamp(1.7rem,4vw,2.9rem);font-weight:700;color:#fff;line-height:1.15;margin:0 0 .8rem;}
+.gl-text{font-family:var(--font-b,system-ui,sans-serif);color:rgba(255,255,255,.62);font-size:1rem;line-height:1.7;max-width:520px;margin:0 auto;}
+.gl-step .btn-gold{margin-top:1.2rem;pointer-events:auto;}
+
+.gl-hint{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;
+  color:rgba(255,255,255,.5);font:600 .68rem var(--font-b,system-ui,sans-serif);letter-spacing:.25em;text-transform:uppercase;
+  transition:opacity .4s ease;pointer-events:none;}
+.gl-hint i{display:block;width:1px;height:26px;background:linear-gradient(var(--gold,#c9a24b),transparent);animation:glHint 1.6s ease-in-out infinite;transform-origin:top;}
+@keyframes glHint{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(0);transform-origin:bottom}}
+.gl-hint.hide{opacity:0;}
+
+.gl-label{position:absolute;left:0;top:0;opacity:0;pointer-events:none;will-change:transform;
+  color:#fff;font:600 .7rem var(--font-b,system-ui,sans-serif);letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;}
+.gl-label::before{content:"";position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;
+  background:var(--gold,#c9a24b);box-shadow:0 0 0 4px rgba(201,162,75,.25);}
+.gl-label span{position:absolute;padding-bottom:4px;border-bottom:1px solid rgba(201,162,75,.65);left:16px;top:-30px;}
+.gl-label.l span{left:auto;right:16px;}
+@media (max-width:760px){ .gl-label{display:none;} .glasses-copy{bottom:7vh;} }
+@media (prefers-reduced-motion:reduce){ .gl-hint i{animation:none;} }
