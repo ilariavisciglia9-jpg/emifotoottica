@@ -20,8 +20,7 @@ function flattenBand(pts, b, capRatio, startRatio, upper) {
   });
 }
 function flattenTop(pts, b, capRatio = .9, startRatio = .5) {
-  pts = flattenBand(pts, b, capRatio, startRatio, true);
-  return flattenBand(pts, b, capRatio * .88, startRatio, false);
+  return flattenBand(pts, b, capRatio, startRatio, true);
 }
 
 /* piccolo logo "Ray-Ban" da applicare su una lente, come sull'originale */
@@ -74,8 +73,8 @@ function makeWayfarer(frameColor) {
   const black = new THREE.MeshPhysicalMaterial({ color: frameColor, roughness: .14, metalness: 0, clearcoat: 1, clearcoatRoughness: .04, envMapIntensity: 1.3 });
   const gold = goldMat(), lens = lensMat(0x3a4229, .58);
 
-  const outer = flattenTop(superPoints(1.0, .58, 6.5, .42, 128), .58, .93, .32);
-  const inner = flattenTop(superPoints(.80, .40, 6, .40, 128), .40, .9, .3).map(p => new THREE.Vector2(p.x, p.y - .05));
+  const outer = flattenTop(superPoints(.98, .58, 3.1, .32, 128), .58, .92, .48);
+  const inner = flattenTop(superPoints(.78, .40, 2.9, .30, 128), .40, .9, .46).map(p => new THREE.Vector2(p.x, p.y - .05));
   const rimShape = shapeFrom(outer); rimShape.holes.push(pathFrom(inner));
   const rimGeo = new THREE.ExtrudeGeometry(rimShape, { depth: .19, bevelEnabled: true, bevelThickness: .04, bevelSize: .035, bevelSegments: 4, steps: 1 });
   rimGeo.translate(0, 0, -.095);
