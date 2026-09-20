@@ -4,7 +4,7 @@
 .glasses-sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;
   background:
     radial-gradient(ellipse 60% 50% at 50% 42%, rgba(201,162,75,.18), transparent 70%),
-    linear-gradient(180deg, var(--navy,#0a2540) 0%, #06182b 100%);}S
+    linear-gradient(180deg, var(--navy,#0a2540) 0%, #06182b 100%);}
 .glasses-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
 
 .glasses-copy{position:absolute;left:0;right:0;bottom:9vh;height:11rem;padding:0 1.25rem;text-align:center;pointer-events:none;}
@@ -32,3 +32,49 @@
 .gl-label.l span{left:auto;right:16px;}
 @media (max-width:760px){ .gl-label{display:none;} .glasses-copy{bottom:7vh;} }
 @media (prefers-reduced-motion:reduce){ .gl-hint i{animation:none;} }
+
+/* ============================================================
+   SEZIONI "TECNOLOGIA LENTI" — occhiale bifocale e fotocromatico
+   (stesso file css, nessun nuovo file)
+   ============================================================ */
+.glf-section{padding:6rem 0;background:var(--navy,#0a2540);overflow:hidden;}
+.glf-section.glf-reverse{background:#06182b;}
+
+.glf-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:3rem;align-items:center;}
+.glf-reverse .glf-grid{grid-template-columns:1fr 1.1fr;}
+.glf-reverse .glf-copy{order:1;}
+.glf-reverse .glf-stage{order:2;}
+
+.glf-stage{position:relative;height:420px;border-radius:1rem;
+  background:radial-gradient(ellipse 65% 55% at 50% 45%, rgba(201,162,75,.14), transparent 70%);
+  opacity:0;transform:translateY(28px);transition:opacity .8s ease, transform .8s ease;}
+.glf-stage.in-view{opacity:1;transform:none;}
+.glf-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+.glf-copy{opacity:0;transform:translateY(18px);transition:opacity .7s ease .1s, transform .7s ease .1s;}
+.glf-copy.in-view{opacity:1;transform:none;}
+.glf-eyebrow{font-family:var(--font-b,system-ui,sans-serif);font-size:.78rem;font-weight:600;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--gold,#c9a24b);margin:0 0 .8rem;}
+.glf-title{font-family:var(--font-h,Georgia,serif);font-size:clamp(1.6rem,3.4vw,2.5rem);font-weight:700;color:#fff;line-height:1.2;margin:0 0 1rem;}
+.glf-text{font-family:var(--font-b,system-ui,sans-serif);color:rgba(255,255,255,.66);font-size:1rem;line-height:1.75;max-width:480px;}
+
+.glf-label{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);opacity:0;pointer-events:none;
+  transition:opacity .5s ease;color:#fff;font:600 .68rem var(--font-b,system-ui,sans-serif);letter-spacing:.16em;text-transform:uppercase;
+  white-space:nowrap;padding:.45rem .9rem;border-radius:999px;background:rgba(201,162,75,.16);border:1px solid rgba(201,162,75,.55);}
+.glf-label.on{opacity:1;}
+
+.glf-photo-pills{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);display:flex;gap:.5rem;pointer-events:none;}
+.glf-photo-pills span{font:600 .68rem var(--font-b,system-ui,sans-serif);letter-spacing:.16em;text-transform:uppercase;
+  padding:.45rem .9rem;border-radius:999px;color:rgba(255,255,255,.45);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+  transition:color .5s ease, background .5s ease, border-color .5s ease;}
+.glf-photo-pills span.on{color:#fff;background:rgba(201,162,75,.2);border-color:rgba(201,162,75,.6);}
+
+@media (max-width:900px){
+  .glf-grid, .glf-reverse .glf-grid{grid-template-columns:1fr;}
+  .glf-reverse .glf-copy{order:2;}
+  .glf-reverse .glf-stage{order:1;}
+  .glf-stage{height:320px;}
+}
+@media (prefers-reduced-motion:reduce){
+  .glf-stage, .glf-copy{transition:opacity .4s ease;transform:none !important;}
+}
