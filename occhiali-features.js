@@ -1,7 +1,7 @@
 /* EmiFotoOttica – "Tecnologia lenti": occhiale bifocale + occhiale fotocromatico
    File additivo (non tocca occhiali-3d.js): riusa le utility esportate da lì. */
 import * as THREE from 'three';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoomEnvironment } from './RoomEnvironment.js';
 import { superPoints, shapeFrom, pathFrom, tube, goldMat, lensMat } from './occhiali-3d.js';
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
