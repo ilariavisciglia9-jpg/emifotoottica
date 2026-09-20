@@ -14,7 +14,7 @@ const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 const easeInCubic = t => t * t * t;
 
 /* ============ GEOMETRIE / MATERIALI ============ */
-function superPoints(a, b, n, skew, N = 96) {
+export function superPoints(a, b, n, skew, N = 96) {
   const pts = [];
   for (let i = 0; i < N; i++) {
     const t = (i / N) * Math.PI * 2, c = Math.cos(t), s = Math.sin(t);
@@ -25,12 +25,12 @@ function superPoints(a, b, n, skew, N = 96) {
   }
   return pts;
 }
-const shapeFrom = pts => { const s = new THREE.Shape(); pts.forEach((p, i) => i ? s.lineTo(p.x, p.y) : s.moveTo(p.x, p.y)); s.closePath(); return s; };
-const pathFrom  = pts => { const s = new THREE.Path();  pts.forEach((p, i) => i ? s.lineTo(p.x, p.y) : s.moveTo(p.x, p.y)); s.closePath(); return s; };
-const tube = (pts, r, seg = 48, rad = 10) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))), seg, r, rad, false);
+export const shapeFrom = pts => { const s = new THREE.Shape(); pts.forEach((p, i) => i ? s.lineTo(p.x, p.y) : s.moveTo(p.x, p.y)); s.closePath(); return s; };
+export const pathFrom  = pts => { const s = new THREE.Path();  pts.forEach((p, i) => i ? s.lineTo(p.x, p.y) : s.moveTo(p.x, p.y)); s.closePath(); return s; };
+export const tube = (pts, r, seg = 48, rad = 10) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))), seg, r, rad, false);
 
-const goldMat  = () => new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 1, roughness: .22, envMapIntensity: 1.4 });
-const lensMat  = (color, opacity) => new THREE.MeshPhysicalMaterial({ color, roughness: .04, metalness: .1, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.6 });
+export const goldMat  = () => new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 1, roughness: .22, envMapIntensity: 1.4 });
+export const lensMat  = (color, opacity) => new THREE.MeshPhysicalMaterial({ color, roughness: .04, metalness: .1, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.6 });
 
 function newModel() {
   const group = new THREE.Group(), parts = [];
