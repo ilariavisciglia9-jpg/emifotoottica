@@ -11,11 +11,65 @@
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Product","name":"Occhiali Ray-Ban","brand":{"@type":"Brand","name":"Ray-Ban"},"offers":{"@type":"AggregateOffer","seller":{"@type":"LocalBusiness","name":"EmiFotoOttica","address":"Via Francesco Merlini 23/25 Roma"}}}
   </script>
-  <link rel="stylesheet" href="brand-glasses.css">
   <script type="importmap">
   {"imports":{"three":"./three.module.min.js"}}
   </script>
   <link rel="modulepreload" href="three.module.min.js">
+  <style>
+    /* --- animazione 3D dedicata alla pagina Ray-Ban --- */
+    .brand-hero{position:relative;overflow:hidden;}
+    .brand-hero .container{position:relative;z-index:1;}
+    .rb-hero-canvas{position:absolute;top:0;right:-4%;width:58%;height:100%;pointer-events:none;
+      opacity:0;transition:opacity 1s ease;}
+    .rb-hero-canvas.ready{opacity:1;}
+    .rb-hero-canvas canvas{width:100%;height:100%;display:block;}
+    @media (max-width:900px){
+      .rb-hero-canvas{width:100%;right:0;opacity:.28 !important;}
+    }
+
+    .brand-colors{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.3rem;align-items:center;}
+    .brand-colors__label{font:600 .68rem var(--font-b,system-ui,sans-serif);letter-spacing:.16em;
+      text-transform:uppercase;color:rgba(255,255,255,.5);margin-right:.3rem;}
+    .brand-color-dot{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.25);
+      cursor:pointer;transition:transform .2s ease, border-color .2s ease;padding:0;}
+    .brand-color-dot:hover{transform:scale(1.14);}
+    .brand-color-dot.active{border-color:var(--gold,#c9a24b);transform:scale(1.16);
+      box-shadow:0 0 0 2px rgba(201,162,75,.25);}
+
+    /* colonna sinistra (scheda tecnica) resta agganciata mentre scorre la storia a destra */
+    .rb-sticky-col{position:sticky;top:96px;align-self:start;}
+
+    .rb-story__track{position:relative;height:260vh;}
+    .rb-story__sticky{position:sticky;top:96px;height:calc(100vh - 116px);min-height:480px;
+      border-radius:var(--r);overflow:hidden;
+      background:radial-gradient(ellipse 60% 50% at 50% 40%, rgba(201,162,75,.16), transparent 70%),
+                 linear-gradient(180deg,#0a2540 0%, #06182b 100%);}
+    .rb-story__canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+    .rb-story__copy{position:absolute;left:0;right:0;bottom:7%;padding:0 1.5rem;text-align:center;pointer-events:none;}
+    .rb-step{position:absolute;left:0;right:0;bottom:0;opacity:0;transform:translateY(16px);
+      transition:opacity .5s ease, transform .5s ease;}
+    .rb-step.on{opacity:1;transform:none;}
+    .rb-step__eyebrow{font-family:var(--font-b);font-size:.75rem;font-weight:700;letter-spacing:.25em;
+      text-transform:uppercase;color:var(--gold);margin:0 0 .5rem;}
+    .rb-step__title{font-family:var(--font-h);color:#fff;font-size:1.5rem;font-weight:700;margin:0 0 .5rem;}
+    .rb-step__text{color:rgba(255,255,255,.72);font-size:.95rem;line-height:1.65;max-width:440px;margin:0 auto;}
+    .rb-label{position:absolute;left:0;top:0;opacity:0;pointer-events:none;will-change:transform;
+      color:#fff;font:600 .68rem var(--font-b,system-ui,sans-serif);letter-spacing:.14em;text-transform:uppercase;
+      white-space:nowrap;transition:opacity .4s ease;}
+    .rb-label::before{content:"";position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;
+      background:var(--gold,#c9a24b);box-shadow:0 0 0 4px rgba(201,162,75,.25);}
+    .rb-label span{position:absolute;padding-bottom:4px;border-bottom:1px solid rgba(201,162,75,.65);left:14px;top:-28px;}
+    .rb-label.l span{left:auto;right:14px;}
+    @media (max-width:900px){
+      .rb-sticky-col{position:static;}
+      .rb-story__track{height:220vh;}
+      .rb-story__sticky{position:sticky;top:70px;height:70vh;}
+      .rb-label{display:none;}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .rb-hero-canvas, .rb-step{transition:opacity .4s ease;}
+    }
+  </style>
 </head>
 <body>
   <nav class="navbar">
@@ -35,6 +89,7 @@
 
   <!-- BRAND HERO -->
   <div class="brand-hero">
+    <div class="rb-hero-canvas" id="rbHeroStage"><canvas id="rbHeroCanvas"></canvas></div>
     <div class="container">
       <a href="occhiali.html" style="display:inline-flex;align-items:center;gap:.4rem;color:rgba(255,255,255,.4);font-size:.82rem;margin-bottom:2rem;transition:color .3s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='rgba(255,255,255,.4)'">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -50,13 +105,16 @@
         <span class="brand-meta-pill">✨ 8 modelli disponibili</span>
         <span class="brand-meta-pill">🛡 Originali garantiti</span>
       </div>
+      <div class="brand-colors" id="rbColors">
+        <span class="brand-colors__label">Colori</span>
+      </div>
     </div>
   </div>
 
   <!-- BRAND INFO + SPECS -->
   <section style="padding:4rem 0;background:var(--bg);">
     <div class="container grid-2">
-      <div class="reveal">
+      <div class="reveal rb-sticky-col">
         <h2 style="font-family:var(--font-h);font-size:1.8rem;font-weight:700;margin-bottom:1.2rem;">Perché scegliere <span class="text-gold-gradient">Ray-Ban</span></h2>
         <p style="color:var(--muted);line-height:1.8;margin-bottom:1.5rem;">Ray-Ban è il marchio di occhiali più iconico al mondo. Fondato nel 1937 per i piloti dell'aeronautica americana, oggi è sinonimo di stile autentico e qualità senza compromessi. Ogni paio di Ray-Ban racconta una storia di libertà e personalità.</p>
         <ul style="list-style:none;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
@@ -75,80 +133,28 @@
         </div>
       </div>
       <div class="reveal" style="transition-delay:.15s">
-        <h2 style="font-family:var(--font-h);font-size:1.8rem;font-weight:700;margin-bottom:1.5rem;">Modelli <span class="text-gold-gradient">Disponibili</span></h2>
-        <div class="grid-2" style="gap:1rem;"><div class="model-card reveal" style="transition-delay:0.00s">
-          <div class="model-card__shape">
-            <svg width="80" height="50" viewBox="0 0 80 50" fill="none" stroke="var(--gold)" stroke-width="2">
-              <ellipse cx="20" cy="25" rx="15" ry="12"/><ellipse cx="60" cy="25" rx="15" ry="12"/>
-              <line x1="35" y1="25" x2="45" y2="25"/><line x1="5" y1="22" x2="1" y2="20"/><line x1="75" y1="22" x2="79" y2="20"/>
-            </svg>
+        <div class="rb-story__track" id="rbStoryTrack">
+          <div class="rb-story__sticky" id="rbStorySticky">
+            <canvas class="rb-story__canvas" id="rbStoryCanvas"></canvas>
+            <div class="rb-story__copy">
+              <div class="rb-step on" data-step="0">
+                <p class="rb-step__eyebrow">Il modello</p>
+                <h3 class="rb-step__title">Wayfarer</h3>
+                <p class="rb-step__text">La forma più riconoscibile di Ray-Ban, nata nel 1952 e mai passata di moda: linee decise e un carattere unico.</p>
+              </div>
+              <div class="rb-step" data-step="1">
+                <p class="rb-step__eyebrow">Dentro la montatura</p>
+                <h3 class="rb-step__title">Ogni dettaglio conta</h3>
+                <p class="rb-step__text">Acetato lucido, rivetti dorati, aste rinforzate: la qualità costruttiva si vede e si sente al tatto.</p>
+              </div>
+              <div class="rb-step" data-step="2">
+                <p class="rb-step__eyebrow">Perché sceglierlo</p>
+                <h3 class="rb-step__title">Lenti e protezione</h3>
+                <p class="rb-step__text">Lenti in cristallo con protezione UV 100%, disponibili da vista e da sole in numerose colorazioni.</p>
+              </div>
+            </div>
           </div>
-          <h3 class="model-card__name">Wayfarer</h3>
-          <p class="model-card__sub">Modello disponibile da vista e da sole. Consulta il personale per le varianti di colore e taglia.</p>
-        </div><div class="model-card reveal" style="transition-delay:0.07s">
-          <div class="model-card__shape">
-            <svg width="80" height="50" viewBox="0 0 80 50" fill="none" stroke="var(--gold)" stroke-width="2">
-              <ellipse cx="20" cy="25" rx="15" ry="12"/><ellipse cx="60" cy="25" rx="15" ry="12"/>
-              <line x1="35" y1="25" x2="45" y2="25"/><line x1="5" y1="22" x2="1" y2="20"/><line x1="75" y1="22" x2="79" y2="20"/>
-            </svg>
-          </div>
-          <h3 class="model-card__name">Aviator</h3>
-          <p class="model-card__sub">Modello disponibile da vista e da sole. Consulta il personale per le varianti di colore e taglia.</p>
-        </div><div class="model-card reveal" style="transition-delay:0.14s">
-          <div class="model-card__shape">
-            <svg width="80" height="50" viewBox="0 0 80 50" fill="none" stroke="var(--gold)" stroke-width="2">
-              <ellipse cx="20" cy="25" rx="15" ry="12"/><ellipse cx="60" cy="25" rx="15" ry="12"/>
-              <line x1="35" y1="25" x2="45" y2="25"/><line x1="5" y1="22" x2="1" y2="20"/><line x1="75" y1="22" x2="79" y2="20"/>
-            </svg>
-          </div>
-          <h3 class="model-card__name">Clubmaster</h3>
-          <p class="model-card__sub">Modello disponibile da vista e da sole. Consulta il personale per le varianti di colore e taglia.</p>
-        </div><div class="model-card reveal" style="transition-delay:0.21s">
-          <div class="model-card__shape">
-            <svg width="80" height="50" viewBox="0 0 80 50" fill="none" stroke="var(--gold)" stroke-width="2">
-              <ellipse cx="20" cy="25" rx="15" ry="12"/><ellipse cx="60" cy="25" rx="15" ry="12"/>
-              <line x1="35" y1="25" x2="45" y2="25"/><line x1="5" y1="22" x2="1" y2="20"/><line x1="75" y1="22" x2="79" y2="20"/>
-            </svg>
-          </div>
-          <h3 class="model-card__name">Round</h3>
-          <p class="model-card__sub">Modello disponibile da vista e da sole. Consulta il personale per le varianti di colore e taglia.</p>
-        </div><div class="model-card reveal" style="transition-delay:0.28s">
-          <div class="model-card__shape">
-            <svg width="80" height="50" viewBox="0 0 80 50" fill="none" stroke="var(--gold)" stroke-width="2">
-              <ellipse cx="20" cy="25" rx="15" ry="12"/><ellipse cx="60" cy="25" rx="15" ry="12"/>
-              <line x1="35" y1="25" x2="45" y2="25"/><line x1="5" y1="22" x2="1" y2="20"/><line x1="75" y1="22" x2="79" y2="20"/>
-            </svg>
-          </div>
-          <h3 class="model-card__name">Hexagonal</h3>
-          <p class="model-card__sub">Modello disponibile da vista e da sole. Consulta il personale per le varianti di colore e taglia.</p>
-        </div><div class="model-card reveal" style="transition-delay:0.35s">
-          <div class="model-card__shape">
-            <svg width="80" height="50" viewBox="0 0 80 50" fill="none" stroke="var(--gold)" stroke-width="2">
-              <ellipse cx="20" cy="25" rx="15" ry="12"/><ellipse cx="60" cy="25" rx="15" ry="12"/>
-              <line x1="35" y1="25" x2="45" y2="25"/><line x1="5" y1="22" x2="1" y2="20"/><line x1="75" y1="22" x2="79" y2="20"/>
-            </svg>
-          </div>
-          <h3 class="model-card__name">Caravan</h3>
-          <p class="model-card__sub">Modello disponibile da vista e da sole. Consulta il personale per le varianti di colore e taglia.</p>
-        </div><div class="model-card reveal" style="transition-delay:0.42s">
-          <div class="model-card__shape">
-            <svg width="80" height="50" viewBox="0 0 80 50" fill="none" stroke="var(--gold)" stroke-width="2">
-              <ellipse cx="20" cy="25" rx="15" ry="12"/><ellipse cx="60" cy="25" rx="15" ry="12"/>
-              <line x1="35" y1="25" x2="45" y2="25"/><line x1="5" y1="22" x2="1" y2="20"/><line x1="75" y1="22" x2="79" y2="20"/>
-            </svg>
-          </div>
-          <h3 class="model-card__name">Erika</h3>
-          <p class="model-card__sub">Modello disponibile da vista e da sole. Consulta il personale per le varianti di colore e taglia.</p>
-        </div><div class="model-card reveal" style="transition-delay:0.49s">
-          <div class="model-card__shape">
-            <svg width="80" height="50" viewBox="0 0 80 50" fill="none" stroke="var(--gold)" stroke-width="2">
-              <ellipse cx="20" cy="25" rx="15" ry="12"/><ellipse cx="60" cy="25" rx="15" ry="12"/>
-              <line x1="35" y1="25" x2="45" y2="25"/><line x1="5" y1="22" x2="1" y2="20"/><line x1="75" y1="22" x2="79" y2="20"/>
-            </svg>
-          </div>
-          <h3 class="model-card__name">Justin</h3>
-          <p class="model-card__sub">Modello disponibile da vista e da sole. Consulta il personale per le varianti di colore e taglia.</p>
-        </div></div>
+        </div>
       </div>
     </div>
   </section>
@@ -205,9 +211,6 @@
     const _obs=new IntersectionObserver((e)=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');_obs.unobserve(x.target);}})},{threshold:.12});
     document.querySelectorAll('.reveal').forEach(el=>_obs.observe(el));
   </script>
-  <script>
-    window.BRAND_GLASSES = { shape: "wayfarer", colors: [{ name: "Nero", hex: 0x0c0c0e }, { name: "Tartaruga", hex: 0x6b4a2b }, { name: "Oro", hex: 0xd4af37 }] };
-  </script>
-  <script type="module" src="brand-glasses.js"></script>
+  <script type="module" src="ray-ban-3d.js"></script>
 </body>
 </html>
