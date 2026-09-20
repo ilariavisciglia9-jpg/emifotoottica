@@ -73,16 +73,16 @@ function makeWayfarer(frameColor) {
   const black = new THREE.MeshPhysicalMaterial({ color: frameColor, roughness: .14, metalness: 0, clearcoat: 1, clearcoatRoughness: .04, envMapIntensity: 1.3 });
   const gold = goldMat(), lens = lensMat(0x3a4229, .58);
 
-  const outer = flattenTop(superPoints(.98, .58, 3.1, .32, 128), .58, .92, .48);
-  const inner = flattenTop(superPoints(.78, .40, 2.9, .30, 128), .40, .9, .46).map(p => new THREE.Vector2(p.x, p.y - .05));
+  const outer = flattenTop(superPoints(.80, .56, 2.7, .26, 128), .56, .9, .48);
+  const inner = flattenTop(superPoints(.62, .38, 2.5, .24, 128), .38, .88, .46).map(p => new THREE.Vector2(p.x, p.y - .05));
   const rimShape = shapeFrom(outer); rimShape.holes.push(pathFrom(inner));
   const rimGeo = new THREE.ExtrudeGeometry(rimShape, { depth: .19, bevelEnabled: true, bevelThickness: .04, bevelSize: .035, bevelSegments: 4, steps: 1 });
   rimGeo.translate(0, 0, -.095);
   const lensGeo = new THREE.ShapeGeometry(shapeFrom(inner.map(p => p.clone().multiplyScalar(1.04))));
 
   for (const [sd, id] of [[-1, 'L'], [1, 'R']]) {
-    const rim = new THREE.Mesh(rimGeo, black);  rim.position.set(sd * .96, 0, 0);   rim.rotation.z = sd * .06;
-    const ln  = new THREE.Mesh(lensGeo, lens);  ln.position.set(sd * .96, 0, .02); ln.rotation.z = sd * .06;
+    const rim = new THREE.Mesh(rimGeo, black);  rim.position.set(sd * 1.0, 0, 0);   rim.rotation.z = sd * .04;
+    const ln  = new THREE.Mesh(lensGeo, lens);  ln.position.set(sd * 1.0, 0, .02); ln.rotation.z = sd * .04;
     if (sd === 1) {
       const logo = makeLogoSprite();
       logo.position.set(-.12, .22, .015); // in coordinate locali della lente destra, angolo alto-nasale
@@ -94,14 +94,14 @@ function makeWayfarer(frameColor) {
 
     const curve = [[0, 0, 0], [0, 0, -.6], [0, 0, -1.6], [-sd * .02, 0, -2.1], [-sd * .05, -.15, -2.5], [-sd * .06, -.4, -2.75]];
     const temple = new THREE.Mesh(tube(curve, .058, 60, 12), black);
-    temple.position.set(sd * 1.9, .2, -.02); temple.scale.set(.75, 1.7, 1);
+    temple.position.set(sd * 1.74, .2, -.02); temple.scale.set(.75, 1.7, 1);
     m.add('temple' + id, temple, [sd * 1.1, .1, -1.3], [0, -sd * .25, 0], .03);
 
     const rivet = new THREE.Mesh(new THREE.SphereGeometry(.058, 20, 16), gold);
-    rivet.position.set(sd * 1.85, .19, .13); rivet.scale.set(1, 1, .5);
+    rivet.position.set(sd * 1.69, .19, .13); rivet.scale.set(1, 1, .5);
     m.add('rivet' + id, rivet, [sd * 1.5, .9, 1.2], [0, 0, sd * 1.5], .2);
   }
-  const bridge = new THREE.Mesh(tube([[-.25, .28, 0], [-.1, .36, 0], [.1, .36, 0], [.25, .28, 0]], .07, 32, 12), black);
+  const bridge = new THREE.Mesh(tube([[-.19, .30, 0], [-.09, .38, 0], [.09, .38, 0], [.19, .30, 0]], .075, 32, 12), black);
   m.add('bridge', bridge, [0, 1.3, .9], [.5, 0, 0], .15);
 
   m.frameMat = black;
