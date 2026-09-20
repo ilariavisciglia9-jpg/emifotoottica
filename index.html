@@ -13,10 +13,11 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="header-footer.css">
   <link rel="stylesheet" href="occhiali-3d.css?v=1">
+  <link rel="stylesheet" href="occhiali-features.css?v=1">
   <script type="importmap">
-  {"imports":{"three":"./vendor/three.module.min.js","three/addons/":"./vendor/addons/"}}
+  {"imports":{"three":"./three_module_min.js"}}
   </script>
-  <link rel="modulepreload" href="vendor/three.module.min.js">
+  <link rel="modulepreload" href="three_module_min.js">
   <link rel="icon" type="image/png" href="emifotoottica_logo.png">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"LocalBusiness","name":"EmiFotoOttica","description":"Ottica e servizi fotografici a Roma dal 1960","address":{"@type":"PostalAddress","streetAddress":"Via Francesco Merlini 23/25","addressLocality":"Roma","addressCountry":"IT"},"telephone":"+393517774492","email":"info@emifotoottica.it","url":"https://www.emifotoottica.it","openingHours":["Mo-Fr 09:00-13:00","Mo-Fr 15:30-19:30","Sa 09:00-13:00"]}
@@ -207,6 +208,9 @@
 })();
 </script>
 
+  <!-- H1 SEO (nascosto visivamente: il banner iniziale ora è l'animazione 3D) -->
+  <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">EmiFotoOttica Roma – Vedi il mondo con stile: occhiali delle migliori marche e servizi fotografici dal 1960</h1>
+
   <!-- ============================================================
        SEZIONE 3D OCCHIALI (three.js) – animazione legata allo scroll
        ============================================================ -->
@@ -241,7 +245,40 @@
     </div>
   </section>
 
+  <!-- ============================================================
+       SEZIONI "TECNOLOGIA LENTI" — occhiale bifocale e fotocromatico
+       (additive: nuovo CSS/JS in occhiali-features.css / .js)
+       ============================================================ -->
+  <section class="glf-section" id="glfBifocal" aria-label="Lenti bifocali">
+    <div class="glf-grid container">
+      <div class="glf-stage" id="glfStageBifocal">
+        <canvas class="glf-canvas" id="glfCanvasBifocal" role="img" aria-label="Animazione 3D di un occhiale con lente bifocale"></canvas>
+        <div class="glf-label glf-label--bifocal" id="glfLabelBifocal"><span>Zona di lettura</span></div>
+      </div>
+      <div class="glf-copy">
+        <p class="glf-eyebrow">Tecnologia delle lenti</p>
+        <h2 class="glf-title">Lenti <span class="text-gold-gradient">bifocali</span></h2>
+        <p class="glf-text">Due gradazioni in un'unica lente: la parte superiore corregge la vista da lontano, il piccolo segmento inferiore quella da vicino. Ideali per chi ha bisogno di occhiali sia per la distanza che per la lettura, senza doverli cambiare in continuazione.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="glf-section glf-reverse" id="glfPhoto" aria-label="Lenti fotocromatiche">
+    <div class="glf-grid container">
+      <div class="glf-copy">
+        <p class="glf-eyebrow">Tecnologia delle lenti</p>
+        <h2 class="glf-title">Lenti <span class="text-gold-gradient">fotocromatiche</span></h2>
+        <p class="glf-text">Si scuriscono automaticamente alla luce del sole e tornano trasparenti in ambienti chiusi. Un'unica lente che si adatta alla luce, per passare dall'interno all'esterno senza mai cambiare occhiali.</p>
+      </div>
+      <div class="glf-stage" id="glfStagePhoto">
+        <canvas class="glf-canvas" id="glfCanvasPhoto" role="img" aria-label="Animazione 3D di un occhiale con lente fotocromatica"></canvas>
+        <div class="glf-photo-pills"><span class="on" id="glfPillIn">Interno</span><span id="glfPillOut">Esterno</span></div>
+      </div>
+    </div>
+  </section>
+
   <script type="module" src="occhiali-3d.js?v=1"></script>
+  <script type="module" src="occhiali-features.js?v=1"></script>
 
   <!-- STATS BAR -->
   <section style="background:var(--navy);padding:3rem 0;">
@@ -525,4 +562,3 @@
   </script>
 </body>
 </html>
-
