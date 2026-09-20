@@ -53,13 +53,18 @@
       text-transform:uppercase;color:var(--gold);margin:0 0 .5rem;}
     .rb-step__title{font-family:var(--font-h);color:#fff;font-size:1.5rem;font-weight:700;margin:0 0 .5rem;}
     .rb-step__text{color:rgba(255,255,255,.72);font-size:.95rem;line-height:1.65;max-width:440px;margin:0 auto;}
-    .rb-label{position:absolute;left:0;top:0;opacity:0;pointer-events:none;will-change:transform;
-      color:#fff;font:600 .68rem var(--font-b,system-ui,sans-serif);letter-spacing:.14em;text-transform:uppercase;
-      white-space:nowrap;transition:opacity .4s ease;}
-    .rb-label::before{content:"";position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;
+    .rb-label{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;will-change:transform;
+      cursor:pointer;transition:opacity .4s ease, background .2s ease, transform .2s ease;}
+    .rb-label::before{content:"";width:8px;height:8px;border-radius:50%;
       background:var(--gold,#c9a24b);box-shadow:0 0 0 4px rgba(201,162,75,.25);}
-    .rb-label span{position:absolute;padding-bottom:4px;border-bottom:1px solid rgba(201,162,75,.65);left:14px;top:-28px;}
-    .rb-label.l span{left:auto;right:14px;}
+    .rb-label:hover{background:rgba(201,162,75,.2);transform:scale(1.35);}
+    .rb-label span{position:absolute;color:#fff;font:600 .68rem var(--font-b,system-ui,sans-serif);letter-spacing:.14em;
+      text-transform:uppercase;white-space:nowrap;padding-bottom:4px;border-bottom:1px solid rgba(201,162,75,.65);
+      left:34px;top:9px;pointer-events:none;}
+    .rb-label.l span{left:auto;right:34px;}
+    .rb-step--hover{display:none;}
+    .rb-step--hover.on{display:block;}
     @media (max-width:900px){
       .rb-sticky-col{position:static;}
       .rb-story__track{height:220vh;}
@@ -137,20 +142,25 @@
           <div class="rb-story__sticky" id="rbStorySticky">
             <canvas class="rb-story__canvas" id="rbStoryCanvas"></canvas>
             <div class="rb-story__copy">
-              <div class="rb-step on" data-step="0">
+              <div class="rb-step on" data-step="0" id="rbStep0">
                 <p class="rb-step__eyebrow">Il modello</p>
                 <h3 class="rb-step__title">Wayfarer</h3>
                 <p class="rb-step__text">La forma più riconoscibile di Ray-Ban, nata nel 1952 e mai passata di moda: linee decise e un carattere unico.</p>
               </div>
-              <div class="rb-step" data-step="1">
+              <div class="rb-step" data-step="1" id="rbStep1">
                 <p class="rb-step__eyebrow">Dentro la montatura</p>
                 <h3 class="rb-step__title">Ogni dettaglio conta</h3>
                 <p class="rb-step__text">Acetato lucido, rivetti dorati, aste rinforzate: la qualità costruttiva si vede e si sente al tatto.</p>
               </div>
-              <div class="rb-step" data-step="2">
+              <div class="rb-step" data-step="2" id="rbStep2">
                 <p class="rb-step__eyebrow">Perché sceglierlo</p>
-                <h3 class="rb-step__title">Lenti e protezione</h3>
-                <p class="rb-step__text">Lenti in cristallo con protezione UV 100%, disponibili da vista e da sole in numerose colorazioni.</p>
+                <h3 class="rb-step__title">Passa il mouse sui dettagli</h3>
+                <p class="rb-step__text">Scopri i vantaggi di ogni componente: lenti, montatura, aste, ponte e rivetti.</p>
+              </div>
+              <div class="rb-step rb-step--hover" id="rbHoverInfo">
+                <p class="rb-step__eyebrow" id="rbHoverEyebrow">Dettaglio</p>
+                <h3 class="rb-step__title" id="rbHoverTitle">—</h3>
+                <p class="rb-step__text" id="rbHoverText">—</p>
               </div>
             </div>
           </div>
