@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="header-footer.css">
   <link rel="stylesheet" href="occhiali-3d.css?v=1">
+  <link rel="stylesheet" href="occhiali-features.css?v=1">
   <script type="importmap">
   {"imports":{"three":"./vendor/three.module.min.js","three/addons/":"./vendor/addons/"}}
   </script>
@@ -207,28 +208,8 @@
 })();
 </script>
 
-  <!-- HERO -->
-  <section class="hero" style="height:90vh;padding-top:64px;">
-<img src="pina6.jpeg">
-    <div class="hero__overlay"></div>
-    <div class="hero__content container">
-      <div style="max-width:640px;">
-        <p class="hero__eyebrow fade-in-up">Ottica &amp; Fotografia dal 1960 · Roma</p>
-        <h1 class="hero__title fade-in-up d1">Vedi il mondo con <span class="text-gold-gradient">stile</span></h1>
-        <p class="hero__sub fade-in-up d2">Occhiali delle migliori marche internazionali, servizi fotografici di qualità e la prima prova virtuale online della zona. Tutto in un unico posto, a Roma.</p>
-        <div class="fade-in-up d3" style="display:flex;flex-wrap:wrap;gap:1rem;">
-          <a href="occhiali.html" class="btn-gold">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="3"/><circle cx="19" cy="12" r="3"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            Scopri gli Occhiali
-          </a>
-          <a href="foto.html" class="btn-outline">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-            Servizi Foto
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- H1 SEO (nascosto visivamente: il banner iniziale ora è l'animazione 3D) -->
+  <h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">EmiFotoOttica Roma – Vedi il mondo con stile: occhiali delle migliori marche e servizi fotografici dal 1960</h1>
 
   <!-- ============================================================
        SEZIONE 3D OCCHIALI (three.js) – animazione legata allo scroll
@@ -264,7 +245,40 @@
     </div>
   </section>
 
+  <!-- ============================================================
+       SEZIONI "TECNOLOGIA LENTI" — occhiale bifocale e fotocromatico
+       (additive: nuovo CSS/JS in occhiali-features.css / .js)
+       ============================================================ -->
+  <section class="glf-section" id="glfBifocal" aria-label="Lenti bifocali">
+    <div class="glf-grid container">
+      <div class="glf-stage" id="glfStageBifocal">
+        <canvas class="glf-canvas" id="glfCanvasBifocal" role="img" aria-label="Animazione 3D di un occhiale con lente bifocale"></canvas>
+        <div class="glf-label glf-label--bifocal" id="glfLabelBifocal"><span>Zona di lettura</span></div>
+      </div>
+      <div class="glf-copy">
+        <p class="glf-eyebrow">Tecnologia delle lenti</p>
+        <h2 class="glf-title">Lenti <span class="text-gold-gradient">bifocali</span></h2>
+        <p class="glf-text">Due gradazioni in un'unica lente: la parte superiore corregge la vista da lontano, il piccolo segmento inferiore quella da vicino. Ideali per chi ha bisogno di occhiali sia per la distanza che per la lettura, senza doverli cambiare in continuazione.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="glf-section glf-reverse" id="glfPhoto" aria-label="Lenti fotocromatiche">
+    <div class="glf-grid container">
+      <div class="glf-copy">
+        <p class="glf-eyebrow">Tecnologia delle lenti</p>
+        <h2 class="glf-title">Lenti <span class="text-gold-gradient">fotocromatiche</span></h2>
+        <p class="glf-text">Si scuriscono automaticamente alla luce del sole e tornano trasparenti in ambienti chiusi. Un'unica lente che si adatta alla luce, per passare dall'interno all'esterno senza mai cambiare occhiali.</p>
+      </div>
+      <div class="glf-stage" id="glfStagePhoto">
+        <canvas class="glf-canvas" id="glfCanvasPhoto" role="img" aria-label="Animazione 3D di un occhiale con lente fotocromatica"></canvas>
+        <div class="glf-photo-pills"><span class="on" id="glfPillIn">Interno</span><span id="glfPillOut">Esterno</span></div>
+      </div>
+    </div>
+  </section>
+
   <script type="module" src="occhiali-3d.js?v=1"></script>
+  <script type="module" src="occhiali-features.js?v=1"></script>
 
   <!-- STATS BAR -->
   <section style="background:var(--navy);padding:3rem 0;">
