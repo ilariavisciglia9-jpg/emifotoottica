@@ -1,3 +1,10 @@
+<style>
+/* Fix: su mobile il menu ad hamburger doveva restare sotto alle sezioni con l'animazione 3D
+   (canvas/sticky) perché quelle creano un proprio contesto di stacking. Qui forziamo l'header
+   e il pannello mobile sempre sopra a tutto il resto della pagina. */
+#siteHeader{position:relative;z-index:99999;}
+#mobileNav{position:relative;z-index:99999;}
+</style>
 <header class="site-header" id="siteHeader">
   <div class="site-header__inner container">
     <a href="index.html" class="site-header__logo">
