@@ -8,14 +8,35 @@ const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 
-/* appiattisce la parte alta del profilo per ottenere la fronte dritta tipica del Wayfarer */
-function flattenTop(pts, b, capRatio = .9, startRatio = .5) {
+/* appiattisce una porzione del profilo (sopra o sotto) per ottenere i bordi dritti del Wayfarer */
+function flattenBand(pts, b, capRatio, startRatio, upper) {
   const cap = b * capRatio, start = b * startRatio;
   return pts.map(p => {
-    if (p.y <= start) return p;
-    const t = smooth(start, cap, p.y);
-    return new THREE.Vector2(p.x, lerp(p.y, cap, t));
+    const y = upper ? p.y : -p.y;
+    if (y <= start) return p;
+    const t = smooth(start, cap, y);
+    const newY = lerp(y, cap, t);
+    return new THREE.Vector2(p.x, upper ? newY : -newY);
   });
+}
+function flattenTop(pts, b, capRatio = .9, startRatio = .5) {
+  pts = flattenBand(pts, b, capRatio, startRatio, true);
+  return flattenBand(pts, b, capRatio * .88, startRatio, false);
+}
+
+/* piccolo logo "Ray-Ban" da applicare su una lente, come sull'originale */
+function makeLogoSprite() {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.font = 'italic 700 34px Georgia, serif';
+  ctx.fillStyle = '#f4f0e6';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Ray-Ban', 6, 34);
+  const tex = new THREE.CanvasTexture(c);
+  tex.anisotropy = 4;
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+  const geo = new THREE.PlaneGeometry(.34, .085);
+  return new THREE.Mesh(geo, mat);
 }
 
 /* ============ GEOMETRIE / MATERIALI (stessa logica della homepage, autonoma) ============ */
@@ -50,11 +71,11 @@ function newModel() {
 /* --- Wayfarer: acetato nero lucido, rivetti oro (la vera forma Ray-Ban) --- */
 function makeWayfarer(frameColor) {
   const m = newModel();
-  const black = new THREE.MeshPhysicalMaterial({ color: frameColor, roughness: .28, metalness: 0, clearcoat: 1, clearcoatRoughness: .06, envMapIntensity: 1.2 });
-  const gold = goldMat(), lens = lensMat(0x1d2f3d, .62);
+  const black = new THREE.MeshPhysicalMaterial({ color: frameColor, roughness: .14, metalness: 0, clearcoat: 1, clearcoatRoughness: .04, envMapIntensity: 1.3 });
+  const gold = goldMat(), lens = lensMat(0x3a4229, .58);
 
-  const outer = flattenTop(superPoints(.94, .54, 4.6, .32), .54);
-  const inner = flattenTop(superPoints(.76, .38, 4.2, .30), .38).map(p => new THREE.Vector2(p.x, p.y - .05));
+  const outer = flattenTop(superPoints(1.0, .58, 6.5, .42, 128), .58, .93, .32);
+  const inner = flattenTop(superPoints(.80, .40, 6, .40, 128), .40, .9, .3).map(p => new THREE.Vector2(p.x, p.y - .05));
   const rimShape = shapeFrom(outer); rimShape.holes.push(pathFrom(inner));
   const rimGeo = new THREE.ExtrudeGeometry(rimShape, { depth: .19, bevelEnabled: true, bevelThickness: .04, bevelSize: .035, bevelSegments: 4, steps: 1 });
   rimGeo.translate(0, 0, -.095);
@@ -63,6 +84,12 @@ function makeWayfarer(frameColor) {
   for (const [sd, id] of [[-1, 'L'], [1, 'R']]) {
     const rim = new THREE.Mesh(rimGeo, black);  rim.position.set(sd * .96, 0, 0);   rim.rotation.z = sd * .06;
     const ln  = new THREE.Mesh(lensGeo, lens);  ln.position.set(sd * .96, 0, .02); ln.rotation.z = sd * .06;
+    if (sd === 1) {
+      const logo = makeLogoSprite();
+      logo.position.set(-.12, .22, .015); // in coordinate locali della lente destra, angolo alto-nasale
+      logo.rotation.z = -sd * .06;
+      ln.add(logo);
+    }
     m.add('rim' + id, rim, [sd * .9, .35, .5], [.15, sd * .35, -sd * .1], .08);
     m.add('lens' + id, ln, [sd * .6, -.1, 1.9], [0, sd * .15, 0], 0);
 
