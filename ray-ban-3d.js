@@ -8,6 +8,16 @@ const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 
+/* appiattisce la parte alta del profilo per ottenere la fronte dritta tipica del Wayfarer */
+function flattenTop(pts, b, capRatio = .9, startRatio = .5) {
+  const cap = b * capRatio, start = b * startRatio;
+  return pts.map(p => {
+    if (p.y <= start) return p;
+    const t = smooth(start, cap, p.y);
+    return new THREE.Vector2(p.x, lerp(p.y, cap, t));
+  });
+}
+
 /* ============ GEOMETRIE / MATERIALI (stessa logica della homepage, autonoma) ============ */
 function superPoints(a, b, n, skew, N = 96) {
   const pts = [];
@@ -43,11 +53,11 @@ function makeWayfarer(frameColor) {
   const black = new THREE.MeshPhysicalMaterial({ color: frameColor, roughness: .28, metalness: 0, clearcoat: 1, clearcoatRoughness: .06, envMapIntensity: 1.2 });
   const gold = goldMat(), lens = lensMat(0x1d2f3d, .62);
 
-  const outer = superPoints(.88, .60, 3.4, .14);
-  const inner = superPoints(.72, .46, 3.0, .14).map(p => new THREE.Vector2(p.x, p.y - .04));
+  const outer = flattenTop(superPoints(.94, .54, 4.6, .32), .54);
+  const inner = flattenTop(superPoints(.76, .38, 4.2, .30), .38).map(p => new THREE.Vector2(p.x, p.y - .05));
   const rimShape = shapeFrom(outer); rimShape.holes.push(pathFrom(inner));
-  const rimGeo = new THREE.ExtrudeGeometry(rimShape, { depth: .16, bevelEnabled: true, bevelThickness: .035, bevelSize: .03, bevelSegments: 4, steps: 1 });
-  rimGeo.translate(0, 0, -.08);
+  const rimGeo = new THREE.ExtrudeGeometry(rimShape, { depth: .19, bevelEnabled: true, bevelThickness: .04, bevelSize: .035, bevelSegments: 4, steps: 1 });
+  rimGeo.translate(0, 0, -.095);
   const lensGeo = new THREE.ShapeGeometry(shapeFrom(inner.map(p => p.clone().multiplyScalar(1.04))));
 
   for (const [sd, id] of [[-1, 'L'], [1, 'R']]) {
@@ -57,12 +67,12 @@ function makeWayfarer(frameColor) {
     m.add('lens' + id, ln, [sd * .6, -.1, 1.9], [0, sd * .15, 0], 0);
 
     const curve = [[0, 0, 0], [0, 0, -.6], [0, 0, -1.6], [-sd * .02, 0, -2.1], [-sd * .05, -.15, -2.5], [-sd * .06, -.4, -2.75]];
-    const temple = new THREE.Mesh(tube(curve, .05, 60, 12), black);
-    temple.position.set(sd * 1.86, .26, -.02); temple.scale.set(.75, 1.7, 1);
+    const temple = new THREE.Mesh(tube(curve, .058, 60, 12), black);
+    temple.position.set(sd * 1.9, .2, -.02); temple.scale.set(.75, 1.7, 1);
     m.add('temple' + id, temple, [sd * 1.1, .1, -1.3], [0, -sd * .25, 0], .03);
 
-    const rivet = new THREE.Mesh(new THREE.SphereGeometry(.05, 20, 16), gold);
-    rivet.position.set(sd * 1.81, .25, .12); rivet.scale.set(1, 1, .5);
+    const rivet = new THREE.Mesh(new THREE.SphereGeometry(.058, 20, 16), gold);
+    rivet.position.set(sd * 1.85, .19, .13); rivet.scale.set(1, 1, .5);
     m.add('rivet' + id, rivet, [sd * 1.5, .9, 1.2], [0, 0, sd * 1.5], .2);
   }
   const bridge = new THREE.Mesh(tube([[-.25, .28, 0], [-.1, .36, 0], [.1, .36, 0], [.25, .28, 0]], .07, 32, 12), black);
@@ -70,9 +80,11 @@ function makeWayfarer(frameColor) {
 
   m.frameMat = black;
   m.labels = [
-    { text: 'Lenti', part: 'lensR', side: 'r' }, { text: 'Montatura', part: 'rimL', side: 'l' },
-    { text: 'Aste', part: 'templeR', side: 'r' }, { text: 'Ponte', part: 'bridge', side: 'l' },
-    { text: 'Rivetti', part: 'rivetL', side: 'l' }
+    { text: 'Lenti', part: 'lensR', side: 'r', title: 'Lenti in cristallo', info: 'Nitidezza ottica superiore, resistenti ai graffi e con protezione UV 100% per proteggere gli occhi in ogni condizione di luce.' },
+    { text: 'Montatura', part: 'rimL', side: 'l', title: 'Montatura in acetato', info: 'Acetato di alta qualità lucidato a mano: leggero da indossare tutto il giorno ma solido e resistente nel tempo.' },
+    { text: 'Aste', part: 'templeR', side: 'r', title: 'Aste rinforzate', info: 'Cerniere in metallo e struttura rinforzata per una tenuta stabile sul viso e una maggiore durata nel tempo.' },
+    { text: 'Ponte', part: 'bridge', side: 'l', title: 'Ponte anatomico', info: 'Distribuisce il peso della montatura in modo uniforme sul naso, per un comfort duraturo anche nell\'uso quotidiano.' },
+    { text: 'Rivetti', part: 'rivetL', side: 'l', title: 'Rivetti iconici', info: 'Il dettaglio distintivo Ray-Ban: rivetti metallici che uniscono estetica riconoscibile e solidità costruttiva.' }
   ];
   return m;
 }
@@ -178,7 +190,7 @@ const models = []; // { frameMat } di ogni istanza, per cambiare colore ovunque 
   const sticky = document.getElementById('rbStorySticky');
   const canvas = document.getElementById('rbStoryCanvas');
   if (!track || !sticky || !canvas) return;
-  const steps = [...sticky.querySelectorAll('.rb-step')];
+  const steps = [...sticky.querySelectorAll('.rb-step:not(.rb-step--hover)')];
 
   let renderer;
   try {
@@ -203,8 +215,29 @@ const models = []; // { frameMat } di ogni istanza, per cambiare colore ovunque 
     const el = document.createElement('div');
     el.className = 'rb-label ' + l.side; el.innerHTML = '<span>' + l.text + '</span>';
     sticky.appendChild(el);
+    el.addEventListener('mouseenter', () => showHoverInfo(l));
+    el.addEventListener('mouseleave', hideHoverInfo);
     return { el, part: model.parts.find(p => p.name === l.part) };
   });
+
+  const hoverInfo = document.getElementById('rbHoverInfo');
+  const hoverEyebrow = document.getElementById('rbHoverEyebrow');
+  const hoverTitle = document.getElementById('rbHoverTitle');
+  const hoverText = document.getElementById('rbHoverText');
+  let hovering = false;
+  function showHoverInfo(l) {
+    hovering = true;
+    hoverEyebrow.textContent = l.text;
+    hoverTitle.textContent = l.title;
+    hoverText.textContent = l.info;
+    steps.forEach(s => s.classList.remove('on'));
+    hoverInfo.classList.add('on');
+  }
+  function hideHoverInfo() {
+    hovering = false;
+    hoverInfo.classList.remove('on');
+    steps.forEach((s, i) => s.classList.toggle('on', i === stepNow));
+  }
 
   let W = 1, H = 1;
   function resize() {
@@ -252,11 +285,12 @@ const models = []; // { frameMat } di ogni istanza, per cambiare colore ovunque 
     camera.lookAt(0, 0, 0);
 
     const idx = p < .3 ? 0 : p < .62 ? 1 : 2;
-    if (idx !== stepNow) { stepNow = idx; steps.forEach((s, i) => s.classList.toggle('on', i === idx)); }
+    if (idx !== stepNow) { stepNow = idx; if (!hovering) steps.forEach((s, i) => s.classList.toggle('on', i === idx)); }
 
     const la = smooth(.68, .92, s2);
     for (const { el, part } of labelEls) {
       el.style.opacity = la;
+      el.style.pointerEvents = la > .5 ? 'auto' : 'none';
       if (la <= 0) continue;
       part.obj.getWorldPosition(v3).project(camera);
       el.style.transform = `translate(${(v3.x * .5 + .5) * W}px, ${(-v3.y * .5 + .5) * H}px)`;
