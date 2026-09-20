@@ -14,7 +14,7 @@ const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 const easeInCubic = t => t * t * t;
 
 /* ============ GEOMETRIE / MATERIALI ============ */
-export function superPoints(a, b, n, skew, N = 96) {
+function superPoints(a, b, n, skew, N = 96) {
   const pts = [];
   for (let i = 0; i < N; i++) {
     const t = (i / N) * Math.PI * 2, c = Math.cos(t), s = Math.sin(t);
@@ -25,12 +25,12 @@ export function superPoints(a, b, n, skew, N = 96) {
   }
   return pts;
 }
-export const shapeFrom = pts => { const s = new THREE.Shape(); pts.forEach((p, i) => i ? s.lineTo(p.x, p.y) : s.moveTo(p.x, p.y)); s.closePath(); return s; };
-export const pathFrom  = pts => { const s = new THREE.Path();  pts.forEach((p, i) => i ? s.lineTo(p.x, p.y) : s.moveTo(p.x, p.y)); s.closePath(); return s; };
-export const tube = (pts, r, seg = 48, rad = 10) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))), seg, r, rad, false);
+const shapeFrom = pts => { const s = new THREE.Shape(); pts.forEach((p, i) => i ? s.lineTo(p.x, p.y) : s.moveTo(p.x, p.y)); s.closePath(); return s; };
+const pathFrom  = pts => { const s = new THREE.Path();  pts.forEach((p, i) => i ? s.lineTo(p.x, p.y) : s.moveTo(p.x, p.y)); s.closePath(); return s; };
+const tube = (pts, r, seg = 48, rad = 10) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))), seg, r, rad, false);
 
-export const goldMat  = () => new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 1, roughness: .22, envMapIntensity: 1.4 });
-export const lensMat  = (color, opacity) => new THREE.MeshPhysicalMaterial({ color, roughness: .04, metalness: .1, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.6 });
+const goldMat  = () => new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 1, roughness: .22, envMapIntensity: 1.4 });
+const lensMat  = (color, opacity) => new THREE.MeshPhysicalMaterial({ color, roughness: .04, metalness: .1, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.6 });
 
 function newModel() {
   const group = new THREE.Group(), parts = [];
@@ -294,3 +294,199 @@ if (renderer) {
     renderer.render(scene, camera);
   }
 }
+
+/* ============================================================
+   SEZIONI "TECNOLOGIA LENTI" — occhiale bifocale e fotocromatico
+   (stesso file, stesse utility di sopra: nessun nuovo modulo)
+   ============================================================ */
+(function () {
+  const reducedMotion = reduced;
+
+  /* --- occhiale con lente BIFOCALE --- */
+  function makeBifocalGlasses() {
+    const group = new THREE.Group();
+    const gold = goldMat();
+    const lens = lensMat(0x2a4658, .5);
+    const segMat = new THREE.MeshPhysicalMaterial({ color: 0xd8e6ee, roughness: .06, metalness: 0, transparent: true, opacity: .85, clearcoat: 1, side: THREE.DoubleSide, depthWrite: false });
+    const segOutline = new THREE.LineBasicMaterial({ color: 0xd4af37, transparent: true, opacity: .9 });
+
+    const ringGeo = new THREE.TorusGeometry(.8, .036, 16, 96);
+    const lensGeo = new THREE.CircleGeometry(.79, 64);
+
+    // segmento di lettura: arco chiuso da corda dritta (forma a "D") nella parte bassa della lente
+    const segShape = new THREE.Shape();
+    segShape.absarc(0, -.18, .42, Math.PI * 1.08, Math.PI * 1.92, false);
+    segShape.closePath();
+    const segGeo = new THREE.ShapeGeometry(segShape);
+    const segEdges = new THREE.EdgesGeometry(segGeo);
+
+    let segMesh0;
+    const outlines = [];
+    for (const sd of [-1, 1]) {
+      const ring = new THREE.Mesh(ringGeo, gold); ring.position.set(sd * .93, 0, 0);
+      const ln = new THREE.Mesh(lensGeo, lens); ln.position.set(sd * .93, 0, 0);
+      const seg = new THREE.Mesh(segGeo, segMat); seg.position.set(sd * .93, -.28, .015);
+      const segLine = new THREE.LineSegments(segEdges, segOutline); segLine.position.copy(seg.position); segLine.position.z += .002;
+      if (!segMesh0) segMesh0 = seg;
+      outlines.push(segLine);
+
+      const curve = [[0, 0, 0], [0, 0, -.6], [0, 0, -1.8], [-sd * .04, -.05, -2.3], [-sd * .06, -.3, -2.6]];
+      const temple = new THREE.Mesh(tube(curve, .03, 60, 8), gold);
+      temple.position.set(sd * 1.76, .1, 0);
+
+      const hinge = new THREE.Mesh(new THREE.SphereGeometry(.048, 16, 12), gold);
+      hinge.position.set(sd * 1.77, .1, 0);
+
+      group.add(ring, ln, seg, segLine, temple, hinge);
+    }
+    const bridge = new THREE.Mesh(tube([[-.11, .1, 0], [-.06, .3, 0], [.06, .3, 0], [.11, .1, 0]], .03, 32, 8), gold);
+    group.add(bridge);
+
+    return { group, segOutline };
+  }
+
+  /* --- occhiale con lente FOTOCROMATICA --- */
+  function makePhotochromicGlasses() {
+    const group = new THREE.Group();
+    const black = new THREE.MeshPhysicalMaterial({ color: 0x0c0c0e, roughness: .28, metalness: 0, clearcoat: 1, clearcoatRoughness: .06, envMapIntensity: 1.2 });
+    const gold = goldMat();
+    const lensDynamic = lensMat(0xdfe7ec, .18); // parte da lente chiara/trasparente
+
+    const outer = superPoints(.88, .60, 3.4, .14);
+    const inner = superPoints(.72, .46, 3.0, .14).map(p => new THREE.Vector2(p.x, p.y - .04));
+    const rimShape = shapeFrom(outer); rimShape.holes.push(pathFrom(inner));
+    const rimGeo = new THREE.ExtrudeGeometry(rimShape, { depth: .16, bevelEnabled: true, bevelThickness: .035, bevelSize: .03, bevelSegments: 4, steps: 1 });
+    rimGeo.translate(0, 0, -.08);
+    const lensGeo = new THREE.ShapeGeometry(shapeFrom(inner.map(p => p.clone().multiplyScalar(1.04))));
+
+    for (const sd of [-1, 1]) {
+      const rim = new THREE.Mesh(rimGeo, black); rim.position.set(sd * .96, 0, 0); rim.rotation.z = sd * .06;
+      const ln = new THREE.Mesh(lensGeo, lensDynamic); ln.position.set(sd * .96, 0, .02); ln.rotation.z = sd * .06;
+
+      const curve = [[0, 0, 0], [0, 0, -.6], [0, 0, -1.6], [-sd * .02, 0, -2.1], [-sd * .05, -.15, -2.5], [-sd * .06, -.4, -2.75]];
+      const temple = new THREE.Mesh(tube(curve, .05, 60, 12), black);
+      temple.position.set(sd * 1.86, .26, -.02); temple.scale.set(.75, 1.7, 1);
+
+      const rivet = new THREE.Mesh(new THREE.SphereGeometry(.05, 20, 16), gold);
+      rivet.position.set(sd * 1.81, .25, .12); rivet.scale.set(1, 1, .5);
+
+      group.add(rim, ln, temple, rivet);
+    }
+    const bridge = new THREE.Mesh(tube([[-.25, .28, 0], [-.1, .36, 0], [.1, .36, 0], [.25, .28, 0]], .07, 32, 12), black);
+    group.add(bridge);
+
+    return { group, lensDynamic };
+  }
+
+  /* --- scena mini (una per canvas), stessa impostazione di quella sopra --- */
+  function createMiniScene(canvasEl) {
+    let r;
+    try {
+      r = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true, powerPreference: 'high-performance' });
+    } catch (err) {
+      console.warn('WebGL non disponibile', err);
+      return null;
+    }
+    r.setPixelRatio(Math.min(devicePixelRatio, 2));
+    r.toneMapping = THREE.ACESFilmicToneMapping;
+    r.toneMappingExposure = 1.05;
+    r.setClearColor(0x000000, 0);
+
+    const sc = new THREE.Scene();
+    const pmrem = new THREE.PMREMGenerator(r);
+    sc.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    const k = new THREE.DirectionalLight(0xfff1d0, 2.2); k.position.set(4, 6, 6); sc.add(k);
+    const rm = new THREE.DirectionalLight(0x88aaff, 1.2); rm.position.set(-5, 2, -4); sc.add(rm);
+
+    const cam = new THREE.PerspectiveCamera(35, 1, .1, 100);
+    cam.position.set(0, 0, 6); cam.lookAt(0, 0, 0);
+
+    const stg = canvasEl.parentElement;
+    function rsz() {
+      const w = stg.clientWidth, h = stg.clientHeight;
+      if (!w || !h) return;
+      r.setSize(w, h, false);
+      cam.aspect = w / h; cam.updateProjectionMatrix();
+    }
+    new ResizeObserver(rsz).observe(stg); rsz();
+
+    return { renderer: r, scene: sc, camera: cam, key: k, resize: rsz };
+  }
+
+  function initFeatureSection({ sectionId, canvasId, buildModel, onFrame }) {
+    const sec = document.getElementById(sectionId);
+    const cnv = document.getElementById(canvasId);
+    if (!sec || !cnv) return;
+    const stg = cnv.parentElement;
+
+    const mini = createMiniScene(cnv);
+    if (!mini) { stg.classList.add('no-webgl'); return; }
+
+    const model = buildModel();
+    mini.scene.add(model.group);
+
+    let isActive = false, isRunning = false, lastTime = 0, t0 = null;
+
+    function frame(now) {
+      if (!isActive) { isRunning = false; return; }
+      requestAnimationFrame(frame);
+      if (t0 === null) t0 = now;
+      const time = (now - t0) / 1000;
+
+      if (!reducedMotion) {
+        model.group.rotation.y = Math.sin(time * .35) * .5 + time * .12;
+        model.group.rotation.x = Math.sin(time * .5) * .05;
+        model.group.position.y = Math.sin(time * .8) * .06;
+      } else {
+        model.group.rotation.y = .35;
+      }
+      onFrame && onFrame(model, time, mini);
+
+      mini.resize();
+      mini.renderer.render(mini.scene, mini.camera);
+    }
+
+    new IntersectionObserver(([en]) => {
+      isActive = en.isIntersecting;
+      stg.classList.toggle('in-view', isActive);
+      const copy = sec.querySelector('.glf-copy');
+      if (copy) copy.classList.toggle('in-view', isActive);
+      if (isActive && !isRunning) { isRunning = true; lastTime = performance.now(); requestAnimationFrame(frame); }
+    }, { threshold: .3 }).observe(sec);
+  }
+
+  /* Bifocale: pulsazione dorata sul segmento di lettura + label */
+  initFeatureSection({
+    sectionId: 'glfBifocal',
+    canvasId: 'glfCanvasBifocal',
+    buildModel: makeBifocalGlasses,
+    onFrame(model, time) {
+      const pulse = .55 + Math.sin(time * 2.2) * .35;
+      model.segOutline.opacity = Math.max(.35, pulse);
+      const label = document.getElementById('glfLabelBifocal');
+      if (label) label.classList.toggle('on', (time % 4) > .6);
+    }
+  });
+
+  /* Fotocromatico: la lente si scurisce/schiarisce ciclicamente */
+  const lightCol = new THREE.Color(0xdfe7ec), darkCol = new THREE.Color(0x1c2a33);
+  initFeatureSection({
+    sectionId: 'glfPhoto',
+    canvasId: 'glfCanvasPhoto',
+    buildModel: makePhotochromicGlasses,
+    onFrame(model, time, mini) {
+      const k = (Math.sin(time * .6 - Math.PI / 2) + 1) / 2; // 0 = chiara/interno, 1 = scura/esterno
+      model.lensDynamic.color.copy(lightCol).lerp(darkCol, k);
+      model.lensDynamic.opacity = .15 + k * .68;
+      if (mini.key) mini.key.intensity = 1.4 + k * 1.6;
+
+      const pillIn = document.getElementById('glfPillIn');
+      const pillOut = document.getElementById('glfPillOut');
+      if (pillIn && pillOut) {
+        pillIn.classList.toggle('on', k < .5);
+        pillOut.classList.toggle('on', k >= .5);
+      }
+    }
+  });
+})();
