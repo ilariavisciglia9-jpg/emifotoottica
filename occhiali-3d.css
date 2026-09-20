@@ -4,7 +4,7 @@
 .glasses-sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;
   background:
     radial-gradient(ellipse 60% 50% at 50% 42%, rgba(201,162,75,.18), transparent 70%),
-    linear-gradient(180deg, var(--navy,#0a2540) 0%, #06182b 100%);}
+    linear-gradient(180deg, var(--navy,#0a2540) 0%, #06182b 100%);}S
 .glasses-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
 
 .glasses-copy{position:absolute;left:0;right:0;bottom:9vh;height:11rem;padding:0 1.25rem;text-align:center;pointer-events:none;}
