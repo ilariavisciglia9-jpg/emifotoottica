@@ -1,6 +1,6 @@
 /* EmiFotoOttica – animazione 3D occhiali legata allo scroll (three.js r160) */
 import * as THREE from 'three';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoomEnvironment } from './RoomEnvironment.js';
 
 /* ============ CONFIGURAZIONE ============ */
 const KEEP = 'wayfarer';      // occhiale che resta e si scompone: 'wayfarer' | 'round'
@@ -294,4 +294,3 @@ if (renderer) {
     renderer.render(scene, camera);
   }
 }
-  
