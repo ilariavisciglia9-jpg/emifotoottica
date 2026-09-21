@@ -89,14 +89,15 @@
     @media (max-width:900px){
       .rb-sticky-col{position:static;}
       .rb-story__track{height:220vh;}
-      .rb-story__sticky{position:sticky;top:70px;height:50vh;overflow:visible;}
+      .rb-story__sticky{position:sticky;top:70px;height:58vh;}
       .rb-label{width:34px;height:34px;}
-      /* il testo scorre sotto l'animazione (più piccola) invece di sovrapporsi,
-         con un fondo scuro dedicato per restare sempre leggibile */
-      .rb-story__copy{top:100%;bottom:auto;margin-top:.9rem;padding:1.1rem 1.25rem 1.3rem;
-        background:linear-gradient(180deg,#0a2540,#06182b);border-radius:var(--r,14px);}
-      .rb-step{position:static;display:none;}
-      .rb-step.on{display:block;}
+      /* il testo resta ancorato in basso dentro il riquadro (l'animazione a scroll
+         resta intatta), ma con un fondo scuro pieno per restare sempre leggibile */
+      .rb-story__copy{
+        left:0;right:0;bottom:0;top:auto;padding:1.2rem 1.25rem 1.4rem;
+        background:linear-gradient(180deg, rgba(6,24,43,0) 0%, rgba(6,24,43,.55) 28%, rgba(6,24,43,.95) 60%, rgba(6,24,43,.98) 100%);
+      }
+      .rb-step__text{max-width:100%;}
     }
     @media (prefers-reduced-motion:reduce){
       .rb-hero-canvas, .rb-step{transition:opacity .4s ease;}
