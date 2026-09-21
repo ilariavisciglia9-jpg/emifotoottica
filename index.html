@@ -24,6 +24,14 @@
 </head>
 <body>
 
+  <style>
+  /* Fix: su mobile il menu ad hamburger doveva restare sotto alle sezioni con l'animazione 3D
+     (canvas/sticky) perché quelle creano un proprio contesto di stacking. Qui forziamo l'header
+     e il pannello mobile sempre sopra a tutto il resto della pagina. */
+  #siteHeader{position:relative;z-index:99999;isolation:isolate;}
+  #mobileNav{position:relative;z-index:99999;}
+  </style>
+
   <header class="site-header" id="siteHeader">
   <div class="site-header__inner container">
     <a href="index.html" class="site-header__logo">
@@ -40,20 +48,20 @@
             <div class="mega-menu__inner">
               <div class="mega-menu__col">
                 <p class="mega-menu__heading">Marchi</p>
-                <a href="brand/ray-ban.html">Ray-Ban</a>
-                <a href="brand/burberry.html">Burberry</a>
-                <a href="brand/guess.html">Guess</a>
-                <a href="brand/max-mara.html">Max Mara</a>
-                <a href="brand/rh-plus.html">RH+</a>
-                <a href="brand/polar.html">Polar</a>
+                <a href="ray-ban.html">Ray-Ban</a>
+                <a href="burberry.html">Burberry</a>
+                <a href="guess.html">Guess</a>
+                <a href="max-mara.html">Max Mara</a>
+                <a href="rh-plus.html">RH+</a>
+                <a href="polar.html">Polar</a>
               </div>
               <div class="mega-menu__col">
                 <p class="mega-menu__heading">Altri Marchi</p>
-                <a href="brand/polaroid.html">Polaroid</a>
-                <a href="brand/mila-z.html">Mila Z</a>
-                <a href="brand/jenni.html">Jenni</a>
-                <a href="brand/richmond.html">Richmond</a>
-                <a href="brand/opposit.html">Opposit</a>
+                <a href="polaroid.html">Polaroid</a>
+                <a href="mila-z.html">Mila Z</a>
+                <a href="genni.html">Genni</a>
+                <a href="richmond.html">Richmond</a>
+                <a href="opposit.html">Opposit</a>
                 <a href="occhiali.html" class="mega-menu__all">Vedi tutti i brand →</a>
               </div>
               <div class="mega-menu__photo">
@@ -131,17 +139,17 @@
     <button class="mobile-nav__toggle" aria-expanded="false">Occhiali <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></button>
     <div class="mobile-nav__panel">
       <a href="occhiali.html">Tutti i brand</a>
-      <a href="brand/ray-ban.html">Ray-Ban</a>
-      <a href="brand/burberry.html">Burberry</a>
-      <a href="brand/guess.html">Guess</a>
-      <a href="brand/max-mara.html">Max Mara</a>
-      <a href="brand/rh-plus.html">RH+</a>
-      <a href="brand/polar.html">Polar</a>
-      <a href="brand/polaroid.html">Polaroid</a>
-      <a href="brand/mila-z.html">Mila Z</a>
-      <a href="brand/jenni.html">Jenni</a>
-      <a href="brand/richmond.html">Richmond</a>
-      <a href="brand/opposit.html">Opposit</a>
+      <a href="ray-ban.html">Ray-Ban</a>
+      <a href="burberry.html">Burberry</a>
+      <a href="guess.html">Guess</a>
+      <a href="max-mara.html">Max Mara</a>
+      <a href="rh-plus.html">RH+</a>
+      <a href="polar.html">Polar</a>
+      <a href="polaroid.html">Polaroid</a>
+      <a href="mila-z.html">Mila Z</a>
+      <a href="genni.html">Genni</a>
+      <a href="richmond.html">Richmond</a>
+      <a href="opposit.html">Opposit</a>
     </div>
 
     <button class="mobile-nav__toggle" aria-expanded="false">Foto &amp; Stampa <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg></button>
