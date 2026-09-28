@@ -8,6 +8,8 @@
   <link rel="canonical" href="https://www.emifotoottica.it/foto-tessere.html">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="header-footer.css">
+  <link rel="stylesheet" href="servizi-3d.css">
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
   <link rel="icon" type="image/png" href="emifotoottica_logo.png">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Service","name":"Foto Tessera","provider":{"@type":"LocalBusiness","name":"EmiFotoOttica","address":{"@type":"PostalAddress","streetAddress":"Via Francesco Merlini 23/25","addressLocality":"Roma","addressCountry":"IT"},"telephone":"+393517774492"},"areaServed":"Roma"}
@@ -209,6 +211,36 @@
     </div>
   </section>
 
+  <!-- ===== Animazione 3D: dalla foto al prodotto ===== -->
+  <section class="svc3d" data-scene="tessera" aria-label="Come realizziamo le tue fototessere" data-photos="">
+    <div class="svc3d__sticky">
+      <canvas class="svc3d__canvas" aria-hidden="true"></canvas>
+      <div class="svc3d__copy">
+        <p class="svc3d__eyebrow">Come nascono le tue fototessere</p>
+        <h2 class="svc3d__title">Dallo scatto alla <span class="text-gold-gradient">fototessera</span></h2>
+        <div class="svc3d__steps">
+          <div class="svc3d__step is-active"><span class="svc3d__num">01</span><h3>Lo scatto</h3><p>Luce professionale e sfondo neutro: pochi secondi davanti al nostro obiettivo.</p></div>
+          <div class="svc3d__step"><span class="svc3d__num">02</span><h3>Ritaglio a norma</h3><p>Controlliamo proporzioni, posizione del viso e sfondo secondo le regole del documento.</p></div>
+          <div class="svc3d__step"><span class="svc3d__num">03</span><h3>Stampa immediata</h3><p>Stampiamo le fototessere su carta fotografica di qualità, nel formato corretto.</p></div>
+          <div class="svc3d__step"><span class="svc3d__num">04</span><h3>Pronte per il documento</h3><p>In pochi minuti hai le tue foto: carta d'identità, passaporto, patente e altro.</p></div>
+        </div>
+        <div class="svc3d__dots"><span class="svc3d__dot is-active"></span><span class="svc3d__dot"></span><span class="svc3d__dot"></span><span class="svc3d__dot"></span></div>
+        <div class="svc3d__actions">
+          <button type="button" class="svc3d__upload">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Carica la tua foto</button>
+          <input type="file" class="svc3d__file" accept="image/*" hidden>
+          <button type="button" class="svc3d__shuffle">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+            Foto a caso
+          </button>
+        </div>
+        <p class="svc3d__status" aria-live="polite"></p>
+        <p class="svc3d__note">Anteprima indicativa: la tua foto resta sul tuo dispositivo e non viene inviata.</p>
+      </div>
+      <div class="svc3d__hint">Scorri</div>
+    </div>
+  </section>
+
   <section style="padding:5rem 0;background:var(--bg);">
     <div class="container">
       <div class="mission-grid">
@@ -270,5 +302,6 @@
     const _obs = new IntersectionObserver((e)=>{ e.forEach(x=>{ if(x.isIntersecting){ x.target.classList.add('visible'); _obs.unobserve(x.target); } }); },{threshold:.12});
     document.querySelectorAll('.reveal').forEach(el=>_obs.observe(el));
   </script>
+  <script type="module" src="servizi-3d.js"></script>
 </body>
 </html>
