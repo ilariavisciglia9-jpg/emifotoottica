@@ -1,7 +1,8 @@
 /* =========================================================
    EmiFotoOttica — Animazioni 3D scroll-driven per le pagine servizio
    Uso: <section class="svc3d" data-scene="cuscino" data-photos="a.jpg,b.jpg"> ... </section>
-   Scene disponibili: cuscino, borsa, tazza, cover, puzzle, magnete, tela, piuma, calendario, fotolibro, piuma, tela, calendario, fotolibro
+   Scene disponibili: cuscino, borsa, tazza, cover, puzzle, magnete, tela, piuma, calendario, fotolibro,
+   tessera, matrimoni, scuole, piuma, tela, calendario, fotolibro
    ========================================================= */
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -878,6 +879,264 @@ function sceneFotolibro(ctx) {
   };
 }
 
+/* =========================================================
+   SCENA: FOTO TESSERA — scatto con flash, ritaglio a norma, foglio con 4 copie
+   e una fototessera che finisce sul documento
+   ========================================================= */
+function guideTexture() {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 658;
+  const g = c.getContext('2d'), gold = cssColor('--gold', '#b8923a');
+  g.strokeStyle = gold; g.lineWidth = 5; g.setLineDash([16, 10]);
+  g.beginPath(); g.ellipse(256, 300, 150, 200, 0, 0, Math.PI * 2); g.stroke();
+  g.setLineDash([]); g.lineWidth = 3; g.globalAlpha = .9;
+  [[120, 'rgba(255,255,255,.9)'], [300, gold], [520, 'rgba(255,255,255,.9)']].forEach(([y, col]) => {
+    g.strokeStyle = col; g.beginPath(); g.moveTo(20, y); g.lineTo(492, y); g.stroke();
+  });
+  g.strokeStyle = '#fff'; g.lineWidth = 8;
+  [[14, 14, 1, 1], [498, 14, -1, 1], [14, 644, 1, -1], [498, 644, -1, -1]].forEach(([x, y, sx, sy]) => {
+    g.beginPath(); g.moveTo(x, y + sy * 60); g.lineTo(x, y); g.lineTo(x + sx * 60, y); g.stroke();
+  });
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function idCardTexture() {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 646;
+  const g = c.getContext('2d');
+  const bg = g.createLinearGradient(0, 0, 1024, 646); bg.addColorStop(0, '#e9f2ef'); bg.addColorStop(1, '#d8e6ee');
+  g.fillStyle = bg; g.fillRect(0, 0, 1024, 646);
+  g.strokeStyle = 'rgba(80,130,140,.12)'; g.lineWidth = 2;
+  for (let k = 0; k < 26; k++) { g.beginPath(); for (let x = 0; x <= 1024; x += 8) g.lineTo(x, 60 + k * 22 + Math.sin(x / 60 + k) * 10); g.stroke(); }
+  g.fillStyle = 'rgba(28,43,74,.85)'; g.fillRect(0, 0, 1024, 70);
+  g.fillStyle = '#fff'; g.font = '600 34px Arial, sans-serif'; g.fillText('DOCUMENTO', 36, 47);
+  g.fillStyle = 'rgba(255,255,255,.75)'; g.fillRect(40, 110, 300, 390); // spazio foto
+  g.fillStyle = 'rgba(28,43,74,.55)';
+  [[400, 130, 380], [400, 200, 300], [400, 270, 420], [400, 340, 260], [400, 410, 340], [400, 480, 220]].forEach(([x, y, w]) => {
+    g.fillRect(x, y, 90, 12); g.fillStyle = 'rgba(28,43,74,.3)'; g.fillRect(x, y + 22, w, 16); g.fillStyle = 'rgba(28,43,74,.55)';
+  });
+  g.fillStyle = 'rgba(28,43,74,.2)'; g.fillRect(40, 560, 944, 16); g.fillRect(40, 590, 700, 16);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function cssColor(name, fb) {
+  try { return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fb; } catch (e) { return fb; }
+}
+function sceneTessera(ctx) {
+  const { scene, photo } = ctx;
+  const A = 35 / 45, CW = .5, CH = CW / A, GAP = .07;
+  const tex = photo.target(A);
+  const rig = new THREE.Group(); scene.add(rig);
+
+  // foglio di carta fotografica con 4 fototessere
+  const paper = new THREE.Group(); rig.add(paper);
+  const PW = 2 * CW + GAP + .26, PH = 2 * CH + GAP + .26;
+  paper.add(new THREE.Mesh(new THREE.BoxGeometry(PW, PH, .01), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .3 })));
+  const lineMat = new THREE.MeshBasicMaterial({ color: '#d9d9d9' });
+  const vl = new THREE.Mesh(new THREE.PlaneGeometry(.004, PH - .04), lineMat); vl.position.z = .0055; paper.add(vl);
+  const hl = new THREE.Mesh(new THREE.PlaneGeometry(PW - .04, .004), lineMat); hl.position.z = .0055; paper.add(hl);
+  const printMat = printMaterial(tex, { base: '#f2f2f2', roughness: .3 });
+  const cells = [];
+  [[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([sx, sy]) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(CW, CH), printMat);
+    m.position.set(sx * (CW + GAP) / 2, sy * (CH + GAP) / 2, .006); paper.add(m); cells.push(m);
+  });
+  // la fototessera ritagliata (copia della prima cella)
+  const cut = new THREE.Mesh(new THREE.BoxGeometry(CW, CH, .006), [ ...Array(4).fill(new THREE.MeshStandardMaterial({ color: '#fff' })), new THREE.MeshStandardMaterial({ map: tex, roughness: .3 }), new THREE.MeshStandardMaterial({ color: '#fff' })]);
+  rig.add(cut);
+
+  // documento generico
+  const card = new THREE.Group(); rig.add(card);
+  card.add(new THREE.Mesh(new RoundedBoxGeometry(1.9, 1.2, .025, 3, .06), [
+    ...Array(4).fill(new THREE.MeshStandardMaterial({ color: '#e3ece9', roughness: .3 })),
+    new THREE.MeshStandardMaterial({ map: idCardTexture(), roughness: .25 }), new THREE.MeshStandardMaterial({ color: '#e3ece9' })]));
+  const slot = new THREE.Vector3(-1.9 / 2 + (40 + 150) / 1024 * 1.9, 1.2 / 2 - (110 + 195) / 646 * 1.2, .016);
+  const slotScale = (300 / 1024 * 1.9) / CW;
+
+  // flash dello scatto
+  const flash = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, depthTest: false, depthWrite: false }));
+  flash.position.z = 4; flash.renderOrder = 999; scene.add(flash);
+
+  const shadow = floorShadow(scene, 3, 1);
+  const sheet = makeSheet(tex, CW * 1.9, CH * 1.9);
+  rig.add(sheet.pivot);
+  const guides = new THREE.Mesh(new THREE.PlaneGeometry(CW * 1.9, CH * 1.9), new THREE.MeshBasicMaterial({ map: guideTexture(), transparent: true, depthWrite: false }));
+  guides.position.set(0, -CH * 1.9 / 2, .004); sheet.pivot.add(guides);
+  const mouse = { x: 0, y: 0 };
+  ctx.onPointer = (x, y) => { mouse.x = x; mouse.y = y; };
+  const tmp = new THREE.Vector3();
+
+  return {
+    update(p, t, L) {
+      const ph = phases(p);
+      const s = rigMotion(rig, ph, t, L, mouse, { fit: .9, ry0: -.5, ryShow: .35, rxShow: -.05 });
+      shadow(L.x, L.y + (-PH / 2 - .35) * s, s, ph.enter);
+      flash.material.opacity = Math.exp(-Math.pow((p - .17) / .018, 2)) * .9;
+      setPrint(printMat, ph.press);
+      // la foto resta sospesa con le guide "a norma", poi si stampa sulle 4 celle
+      sheet.fly({ ...ph, land: 0 }, new THREE.Vector3(0, CH * .95, .9), new THREE.Vector3(0, CH * .95, .9));
+      sheet.shape((x, y) => [x, y, 0], 'flat');
+      sheet.ink(ph, seg(ph.press, .15, .6));
+      guides.material.opacity = seg(p, .3, .42) * (1 - seg(ph.press, 0, .3));
+      // ritaglio: la prima fototessera si stacca e va sul documento
+      const move = ease(seg(p, .74, .88));
+      paper.position.set(lerp(0, -.75, move), lerp(0, .25, move), lerp(0, -.35, move));
+      paper.scale.setScalar(lerp(1, .8, move));
+      card.position.set(lerp(3.6, .55, move), lerp(-.4, -.35, move), .25);
+      card.rotation.set(0, lerp(-.5, 0, move), lerp(.15, -.04, move));
+      const cutT = ease(seg(p, .8, .95));
+      tmp.copy(cells[0].position).multiplyScalar(paper.scale.x).add(paper.position); tmp.z += .02;
+      const end = slot.clone().applyEuler(card.rotation).add(card.position);
+      cut.position.lerpVectors(tmp, end, cutT); cut.position.z += Math.sin(cutT * Math.PI) * .5;
+      cut.rotation.set(0, 0, lerp(0, card.rotation.z, cutT) + Math.sin(cutT * Math.PI) * .3);
+      cut.scale.setScalar(lerp(paper.scale.x, slotScale, cutT));
+      cut.visible = p > .8;
+      cells[0].visible = p <= .8;
+    }
+  };
+}
+
+/* =========================================================
+   SCENA: MATRIMONI — album avorio con finiture oro, petali che cadono
+   ========================================================= */
+function sceneMatrimoni(ctx) {
+  const { scene, photo } = ctx;
+  const W = 1.5, H = 1.9, TH = .24, CT = .04, rect = [.16, .3, .84, .86];
+  const RW = W * (rect[2] - rect[0]), RH = H * (rect[3] - rect[1]);
+  const tex = photo.target(RW / RH);
+  const inner = photo.target((W - .36) / (H - .5), { zoom: 1.3, oy: -.2 });
+  const rig = new THREE.Group(); scene.add(rig);
+  const book = new THREE.Group(); rig.add(book);
+  const leather = new THREE.MeshStandardMaterial({ color: '#efe6d6', roughness: .6 });
+  const endpaper = new THREE.MeshStandardMaterial({ color: '#f5efe3', roughness: .9 });
+  const gold = new THREE.MeshStandardMaterial({ color: '#c9a24a', metalness: 1, roughness: .28 });
+  const pagesMat = new THREE.MeshStandardMaterial({ color: '#f3ead6', roughness: .8 });
+
+  const back = new THREE.Mesh(new THREE.BoxGeometry(W, H, CT), [leather, leather, leather, leather, endpaper, leather]);
+  back.position.set(0, 0, -TH / 2 + CT / 2); book.add(back);
+  const block = new THREE.Mesh(new THREE.BoxGeometry(W - .08, H - .08, TH - 2 * CT - .01), [gold, gold, gold, gold, pagesMat, pagesMat]);
+  block.position.set(.02, 0, 0); book.add(block);
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(CT, H, TH), leather);
+  spine.position.set(-W / 2 + CT / 2, 0, 0); book.add(spine);
+  const pageTop = TH / 2 - CT - .004;
+  const innerPhoto = new THREE.Mesh(new THREE.PlaneGeometry(W - .36, H - .5), new THREE.MeshStandardMaterial({ map: inner, roughness: .6 }));
+  innerPhoto.position.set(.04, .05, pageTop + .002); book.add(innerPhoto);
+
+  const hinge = new THREE.Group(); hinge.position.set(-W / 2, 0, TH / 2 - CT / 2); book.add(hinge);
+  const printMat = printMaterial(tex, { rect, base: '#e9dfcc', roughness: .5 });
+  const cover = new THREE.Mesh(new THREE.BoxGeometry(W, H, CT), [leather, leather, leather, leather, printMat, endpaper]);
+  cover.position.x = W / 2; hinge.add(cover);
+  // cornice oro attorno alla foto e fedi
+  const cx = -W / 2 + (rect[0] + rect[2]) / 2 * W, cy = -H / 2 + (rect[1] + rect[3]) / 2 * H, m = .05, z = CT / 2 + .004;
+  [[RW + 2 * m, .018, cx, cy + RH / 2 + m], [RW + 2 * m, .018, cx, cy - RH / 2 - m], [.018, RH + 2 * m, cx - RW / 2 - m, cy], [.018, RH + 2 * m, cx + RW / 2 + m, cy]]
+    .forEach(([w, h, x, y]) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, .008), gold); b.position.set(x, y, z); cover.add(b); });
+  [-.055, .055].forEach(dx => { const r = new THREE.Mesh(new THREE.TorusGeometry(.085, .013, 12, 48), gold); r.position.set(dx, -H / 2 + .17 * H, z); cover.add(r); });
+
+  // petali
+  const petals = [];
+  const petalGeo = new THREE.CircleGeometry(.05, 12); petalGeo.scale(1, .62, 1);
+  ['#f6d5dc', '#fbeef0', '#f1c6cf', '#ffffff'].forEach((col, ci) => {
+    const mat = new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: .45, roughness: .7, side: THREE.DoubleSide, transparent: true });
+    for (let i = 0; i < 9; i++) {
+      const pm = new THREE.Mesh(petalGeo, mat); scene.add(pm);
+      petals.push({ m: pm, mat, x: (Math.random() - .5) * 5, z: (Math.random() - .5) * 2, ph: Math.random() * 10, sp: .18 + Math.random() * .2, r: Math.random() * 6 });
+    }
+  });
+
+  const shadow = floorShadow(scene, 2.6, 1);
+  const sheet = makeSheet(tex, RW, RH);
+  hinge.add(sheet.pivot);
+  const mouse = { x: 0, y: 0 };
+  ctx.onPointer = (x, y) => { mouse.x = x; mouse.y = y; };
+
+  return {
+    update(p, t, L) {
+      const ph = phases(p);
+      const s = rigMotion(rig, ph, t, L, mouse, { fit: .88, ry0: -.8, ryShow: .3, rxShow: -.1 });
+      shadow(L.x, L.y + (-H / 2 - .3) * s, s, ph.enter);
+      setPrint(printMat, ph.press);
+      const open = ease(seg(p, .78, .94));
+      hinge.rotation.y = -open * Math.PI * .97;
+      book.position.x = open * W / 2;
+      sheet.fly(ph, new THREE.Vector3(W / 2 + cx, cy + RH / 2, .7), new THREE.Vector3(W / 2 + cx, cy + RH / 2, CT / 2 + .01));
+      sheet.shape((x, y) => [x, y, 0], 'flat');
+      sheet.peel(ease(seg(p, .72, .8)));
+      sheet.ink(ph, seg(p, .75, .8));
+      petals.forEach(pt => {
+        const y = 2.6 - ((t * pt.sp + pt.ph) % 5.2);
+        pt.m.position.set(L.x + pt.x * s + Math.sin(t * .7 + pt.ph) * .25, L.y + y, pt.z);
+        pt.m.rotation.set(t * .8 + pt.r, t * .5 + pt.r, t * .3);
+        pt.mat.opacity = .9 * ph.enter;
+      });
+    }
+  };
+}
+
+/* =========================================================
+   SCENA: FOTO SCUOLE — foto di classe nel cartoncino ricordo, poi una copia per ogni alunno
+   ========================================================= */
+function folderTexture(W, H) {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = Math.round(1024 * H / W);
+  const g = c.getContext('2d'), gold = cssColor('--gold', '#b8923a'), navy = cssColor('--navy', '#1c2b4a');
+  g.fillStyle = navy; g.fillRect(0, 0, c.width, c.height);
+  g.strokeStyle = gold; g.lineWidth = 4; g.strokeRect(26, 26, c.width - 52, c.height - 52);
+  g.lineWidth = 1.5; g.strokeRect(38, 38, c.width - 76, c.height - 76);
+  const now = new Date(), y0 = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+  g.textAlign = 'center';
+  g.fillStyle = gold; g.font = 'italic 600 46px Georgia, serif';
+  g.fillText('Foto di classe', c.width / 2, c.height - 92);
+  g.fillStyle = 'rgba(255,255,255,.8)'; g.font = '400 28px Georgia, serif';
+  g.fillText('Anno scolastico ' + y0 + '/' + (y0 + 1), c.width / 2, c.height - 50);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function sceneScuole(ctx) {
+  const { scene, photo } = ctx;
+  const W = 1.9, H = 1.55, FW = 1.5, FH = 1.0, FY = .14;
+  const tex = photo.target(FW / FH);
+  const rig = new THREE.Group(); scene.add(rig);
+  const navy = new THREE.MeshStandardMaterial({ color: cssColor('--navy', '#1c2b4a'), roughness: .7 });
+  const front = new THREE.MeshStandardMaterial({ map: folderTexture(W, H), roughness: .6 });
+  const folderGeo = new THREE.BoxGeometry(W, H, .02);
+  const mountGeo = new THREE.PlaneGeometry(FW + .06, FH + .06), photoGeo = new THREE.PlaneGeometry(FW, FH);
+  const mountMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .5 });
+  const printMat = printMaterial(tex, { base: '#eef0f3', roughness: .35 });
+  const staticMat = new THREE.MeshStandardMaterial({ map: tex, roughness: .35 });
+  function makeFolder(mat) {
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(folderGeo, [navy, navy, navy, navy, front, navy]));
+    const mount = new THREE.Mesh(mountGeo, mountMat); mount.position.set(0, FY, .011); g.add(mount);
+    const ph = new THREE.Mesh(photoGeo, mat); ph.position.set(0, FY, .013); g.add(ph);
+    return g;
+  }
+  const main = makeFolder(printMat); rig.add(main);
+  const copies = [];
+  for (let i = 0; i < 6; i++) { const f = makeFolder(staticMat); f.visible = false; rig.add(f); copies.push(f); }
+
+  const shadow = floorShadow(scene, 3.4, 1.1);
+  const sheet = makeSheet(tex, FW, FH);
+  main.add(sheet.pivot);
+  const mouse = { x: 0, y: 0 };
+  ctx.onPointer = (x, y) => { mouse.x = x; mouse.y = y; };
+
+  return {
+    update(p, t, L) {
+      const ph = phases(p);
+      const s = rigMotion(rig, ph, t, L, mouse, { fit: .85, ry0: -.6, ryShow: .2, rxShow: -.08 });
+      shadow(L.x, L.y + (-H / 2 - .35) * s, s, ph.enter);
+      setPrint(printMat, ph.press);
+      sheet.fly(ph, new THREE.Vector3(0, FY + FH / 2, .7), new THREE.Vector3(0, FY + FH / 2, .016));
+      sheet.shape((x, y) => [x, y, 0], 'flat');
+      sheet.peel(ph.after);
+      sheet.ink(ph, seg(ph.after, .45, 1));
+      // una copia per ogni alunno: i cartoncini si aprono a ventaglio dietro l'originale
+      const fan = ease(seg(p, .8, .96));
+      copies.forEach((f, i) => {
+        const k = (i - (copies.length - 1) / 2) / ((copies.length - 1) / 2); // -1..1
+        f.visible = fan > .01;
+        f.position.set(k * .95 * fan, -Math.abs(k) * .12 * fan, -.05 - .02 * i);
+        f.rotation.set(0, 0, -k * .32 * fan);
+      });
+      main.position.set(0, lerp(0, .05, fan), lerp(0, .1, fan));
+    }
+  };
+}
+
 const SCENES = {
   cuscino: makeSoftScene({ w: 1, h: 1, D: .34, pinch: .07, print: .86, fabric: '#f2ede3', piping: .022 }),
   borsa: makeSoftScene({ w: .85, h: .95, D: .1, pinch: .025, print: .8, fabric: '#ece3cf', piping: .012, handles: true, fit: .82, yOff: -.35, ry0: -.6, ryShow: .45 }),
@@ -888,7 +1147,10 @@ const SCENES = {
   piuma: scenePiuma,
   tela: sceneTela,
   calendario: sceneCalendario,
-  fotolibro: sceneFotolibro
+  fotolibro: sceneFotolibro,
+  tessera: sceneTessera,
+  matrimoni: sceneMatrimoni,
+  scuole: sceneScuole
 };
 
 /* =========================================================
