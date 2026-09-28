@@ -213,7 +213,7 @@
 
   <!-- ===== Animazione 3D: dalla foto al cuscino ===== -->
   <section class="svc3d" data-scene="cuscino" aria-label="Come realizziamo il tuo cuscino personalizzato"
-           data-photos="img/demo-3d/foto1.jpg,img/demo-3d/foto2.jpg,img/demo-3d/foto3.jpg,img/demo-3d/foto4.jpg,img/demo-3d/foto5.jpg,img/demo-3d/foto6.jpg">
+           data-photos="">
     <div class="svc3d__sticky">
       <canvas class="svc3d__canvas" aria-hidden="true"></canvas>
       <div class="svc3d__copy">
@@ -226,10 +226,17 @@
           <div class="svc3d__step"><span class="svc3d__num">04</span><h3>Pronto da regalare</h3><p>Morbido, unico e pieno di significato: il regalo perfetto per nonni, mamma e papà.</p></div>
         </div>
         <div class="svc3d__dots"><span class="svc3d__dot is-active"></span><span class="svc3d__dot"></span><span class="svc3d__dot"></span><span class="svc3d__dot"></span></div>
-        <button type="button" class="svc3d__shuffle">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-          Prova con un'altra foto
-        </button>
+        <div class="svc3d__actions">
+          <button type="button" class="svc3d__upload">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Carica la tua foto</button>
+          <input type="file" class="svc3d__file" accept="image/*" hidden>
+          <button type="button" class="svc3d__shuffle">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+            Foto a caso
+          </button>
+        </div>
+        <p class="svc3d__status" aria-live="polite"></p>
+        <p class="svc3d__note">Anteprima indicativa: la tua foto resta sul tuo dispositivo e non viene inviata.</p>
       </div>
       <div class="svc3d__hint">Scorri</div>
     </div>
