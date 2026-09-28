@@ -12,10 +12,18 @@ const ease = t => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const lerp = (a, b, t) => a + (b - a) * t;
 
 /* ---------- Foto casuale ---------- */
-function loadImage(src) {
-  return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; });
+function loadImage(src, timeout = 9000) {
+  return new Promise((res, rej) => {
+    const i = new Image();
+    try { if (!src.startsWith('blob:') && new URL(src, location.href).origin !== location.origin) i.crossOrigin = 'anonymous'; } catch (e) { }
+    const t = setTimeout(() => rej(new Error('timeout')), timeout);
+    i.onload = () => { clearTimeout(t); res(i); };
+    i.onerror = e => { clearTimeout(t); rej(e); };
+    i.src = src;
+  });
 }
 function drawCover(ctx, img, S) {
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, S, S);
   const r = Math.max(S / img.width, S / img.height), w = img.width * r, h = img.height * r;
   ctx.drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
 }
@@ -54,15 +62,38 @@ function createPhotoSource(list) {
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   const photos = list.slice().sort(() => Math.random() - .5);
-  let idx = -1, fallbackK = Math.floor(Math.random() * 4);
+  let idx = -1, fallbackK = Math.floor(Math.random() * 4), localDead = !photos.length, token = 0;
+  const draw = img => { drawCover(ctx, img, S); tex.needsUpdate = true; };
+  // subito una foto visibile, poi la sostituisce con quella vera appena caricata
+  paintFallback(ctx, S, fallbackK++); tex.needsUpdate = true;
+
+  // Foto a caso: prima quelle locali (data-photos), altrimenti una foto casuale online
   async function next() {
-    for (let tries = 0; tries < photos.length; tries++) {
-      idx = (idx + 1) % photos.length;
-      try { const img = await loadImage(photos[idx]); drawCover(ctx, img, S); tex.needsUpdate = true; return; } catch (e) { /* prova la successiva */ }
+    const my = ++token;
+    if (!localDead) {
+      for (let tries = 0; tries < photos.length; tries++) {
+        idx = (idx + 1) % photos.length;
+        try { const img = await loadImage(photos[idx]); if (my === token) draw(img); return; } catch (e) { /* prova la successiva */ }
+      }
+      localDead = true;
     }
-    paintFallback(ctx, S, fallbackK++); tex.needsUpdate = true;
+    try {
+      const seed = 'emi' + Math.floor(Math.random() * 1e9);
+      const img = await loadImage('https://picsum.photos/seed/' + seed + '/1024/1024');
+      if (my === token) draw(img); return;
+    } catch (e) { /* offline: usa la foto disegnata */ }
+    if (my === token) { paintFallback(ctx, S, fallbackK++); tex.needsUpdate = true; }
   }
-  return { tex, next };
+
+  // Foto del cliente: resta nel browser, non viene inviata a nessun server
+  async function fromFile(file) {
+    if (!file || !file.type.startsWith('image/')) return false;
+    const my = ++token, url = URL.createObjectURL(file);
+    try { const img = await loadImage(url, 30000); if (my === token) draw(img); return true; }
+    catch (e) { return false; }
+    finally { URL.revokeObjectURL(url); }
+  }
+  return { tex, next, fromFile };
 }
 
 /* ---------- Texture tessuto ---------- */
@@ -252,13 +283,36 @@ function initSection(section) {
   const shuffle = section.querySelector('.svc3d__shuffle');
   if (shuffle) shuffle.addEventListener('click', () => photo.next());
 
+  // Caricamento foto del cliente -> anteprima sul prodotto
+  const upBtn = section.querySelector('.svc3d__upload');
+  const upInput = section.querySelector('.svc3d__file');
+  const upStatus = section.querySelector('.svc3d__status');
+  if (upBtn && upInput) {
+    upBtn.addEventListener('click', () => upInput.click());
+    upInput.addEventListener('change', async () => {
+      const file = upInput.files && upInput.files[0];
+      upInput.value = '';
+      if (!file) return;
+      if (upStatus) upStatus.textContent = 'Caricamento…';
+      const ok = await photo.fromFile(file);
+      if (upStatus) upStatus.textContent = ok ? '✓ Ecco la tua foto sul prodotto' : 'Formato non supportato, prova con un JPG o PNG';
+      if (!ok) return;
+      upBtn.lastChild.textContent = ' Cambia la tua foto';
+      // se l'animazione non è ancora alla fine, la fa scorrere fino al prodotto finito
+      if (cur < .9) {
+        const top = section.getBoundingClientRect().top + window.scrollY + (section.offsetHeight - window.innerHeight) * .97;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  }
+
   const L = { x: 0, y: 0, s: 1 };
   function resize() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
     const a = camera.aspect;
-    if (a < .85) { L.x = 0; L.y = .72; L.s = Math.min(.95, a * 1.5); }       // mobile: oggetto in alto, testo sotto
+    if (a < .85) { L.x = 0; L.y = .85; L.s = Math.min(.9, a * 1.4); }       // mobile: oggetto in alto, testo sotto
     else if (a < 1.25) { L.x = .7; L.y = 0; L.s = .8; }                         // tablet
     else { L.x = Math.min(1.35, a * .62); L.y = 0; L.s = 1; }                    // desktop: oggetto a destra
   }
