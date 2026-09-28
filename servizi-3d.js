@@ -1,7 +1,7 @@
 /* =========================================================
    EmiFotoOttica — Animazioni 3D scroll-driven per le pagine servizio
    Uso: <section class="svc3d" data-scene="cuscino" data-photos="a.jpg,b.jpg"> ... </section>
-   Scene disponibili: cuscino, borsa, tazza, cover, puzzle, magnete
+   Scene disponibili: cuscino, borsa, tazza, cover, puzzle, magnete, tela, piuma, calendario, fotolibro, piuma, tela, calendario, fotolibro
    ========================================================= */
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -23,10 +23,13 @@ function loadImage(src, timeout = 9000) {
     i.src = src;
   });
 }
-function drawCover(ctx, img, W, H) {
+function drawCover(ctx, img, W, H, o = {}) {
   ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-  const r = Math.max(W / img.width, H / img.height), w = img.width * r, h = img.height * r;
-  ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+  const z = o.zoom || 1, r = Math.max(W / img.width, H / img.height) * z, w = img.width * r, h = img.height * r;
+  ctx.save();
+  if (o.filter && 'filter' in ctx) ctx.filter = o.filter; // variante (seppia, b/n...) dove supportato
+  ctx.drawImage(img, (W - w) / 2 + (o.ox || 0) * (w - W) / 2, (H - h) / 2 + (o.oy || 0) * (h - H) / 2, w, h);
+  ctx.restore();
 }
 // Foto "finta" di riserva (tramonto al mare) se le immagini non sono disponibili
 const PALETTES = [
@@ -61,7 +64,7 @@ function createPhotoSource(list) {
   const targets = [];
   let current = null;
   function paint(t) {
-    drawCover(t.canvas.getContext('2d'), current, t.canvas.width, t.canvas.height);
+    drawCover(t.canvas.getContext('2d'), current, t.canvas.width, t.canvas.height, t.opts);
     t.tex.needsUpdate = true;
   }
   function set(src) {
@@ -71,13 +74,13 @@ function createPhotoSource(list) {
     c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
     current = c; targets.forEach(paint);
   }
-  function target(aspect = 1) {
+  function target(aspect = 1, opts = {}) {
     const canvas = document.createElement('canvas');
     if (aspect >= 1) { canvas.width = 1024; canvas.height = Math.round(1024 / aspect); }
     else { canvas.height = 1024; canvas.width = Math.round(1024 * aspect); }
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
-    const t = { canvas, tex }; targets.push(t);
+    const t = { canvas, tex, opts }; targets.push(t);
     if (current) paint(t);
     return tex;
   }
@@ -160,15 +163,15 @@ function phases(p) {
 const easeOutBack = t => { const c = 1.9; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
 
 // Materiale "stampabile": colore base finché la stampa (uReveal) non scorre dall'alto verso il basso
-function printMaterial(tex, { rect = [0, 0, 1, 1], base = '#ffffff', roughness = .5, metalness = 0, bump = null, bumpScale = .15 } = {}) {
+function printMaterial(tex, { rect = [0, 0, 1, 1], base = '#ffffff', roughness = .5, metalness = 0, bump = null, bumpScale = .15, glow = [1, .62, .3] } = {}) {
   const U = {
     uReveal: { value: -.1 }, uGlow: { value: 0 },
-    uBase: { value: new THREE.Color(base) }, uRect: { value: new THREE.Vector4(...rect) }
+    uBase: { value: new THREE.Color(base) }, uRect: { value: new THREE.Vector4(...rect) }, uGlowCol: { value: new THREE.Vector3(...glow) }
   };
   const m = new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex, roughness, metalness, bumpMap: bump, bumpScale });
   m.onBeforeCompile = sh => {
     Object.assign(sh.uniforms, U);
-    sh.fragmentShader = 'uniform float uReveal; uniform float uGlow; uniform vec3 uBase; uniform vec4 uRect;\n' + sh.fragmentShader
+    sh.fragmentShader = 'uniform float uReveal; uniform float uGlow; uniform vec3 uBase; uniform vec4 uRect; uniform vec3 uGlowCol;\n' + sh.fragmentShader
       .replace('#include <map_fragment>', `
         vec2 pUv = (vMapUv - uRect.xy) / (uRect.zw - uRect.xy);
         float soft = smoothstep(0.0,0.008,pUv.x)*smoothstep(0.0,0.008,1.0-pUv.x)*smoothstep(0.0,0.008,pUv.y)*smoothstep(0.0,0.008,1.0-pUv.y);
@@ -178,7 +181,7 @@ function printMaterial(tex, { rect = [0, 0, 1, 1], base = '#ffffff', roughness =
         diffuseColor.rgb *= mix(uBase, photoC, soft * rev);
         float heatBand = exp(-pow((tt - uReveal) * 14.0, 2.0)) * step(0.001, soft);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        totalEmissiveRadiance += uGlow * heatBand * vec3(1.0, 0.62, 0.3);`);
+        totalEmissiveRadiance += uGlow * heatBand * uGlowCol;`);
   };
   m.userData.U = U;
   return m;
@@ -615,13 +618,277 @@ function sceneMagnete(ctx) {
   };
 }
 
+/* =========================================================
+   SCENA: STAMPA SU TELA — stampa sulla tela, poi la tela si tende sul telaio
+   (i bordi si ripiegano sui lati: la foto continua sui fianchi)
+   ========================================================= */
+function sceneTela(ctx) {
+  const { scene, photo } = ctx;
+  const W = 2.0, H = 1.52, D = .16, STEP = .04;
+  const CW = W + 2 * D, CH = H + 2 * D;
+  const tex = photo.target(CW / CH);
+  const rig = new THREE.Group(); scene.add(rig);
+
+  // telaio in legno
+  const wood = new THREE.MeshStandardMaterial({ color: '#d9bf94', roughness: .8 });
+  const frame = new THREE.Group(); rig.add(frame);
+  const bar = (w, h, x, y) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, D - .01), wood); m.position.set(x, y, -D / 2); frame.add(m); };
+  bar(W, .1, 0, H / 2 - .05); bar(W, .1, 0, -H / 2 + .05); bar(.1, H - .2, -W / 2 + .05, 0); bar(.1, H - .2, W / 2 - .05, 0);
+  bar(.06, H - .2, 0, 0);
+
+  // tela (i vertici cadono esattamente sulle linee di piega)
+  const geo = new THREE.PlaneGeometry(CW, CH, Math.round(CW / STEP), Math.round(CH / STEP));
+  const base = Float32Array.from(geo.attributes.position.array);
+  const weave = weaveTexture();
+  const printMat = printMaterial(tex, { base: '#f4f1ea', roughness: .85, bump: weave, bumpScale: .12 });
+  printMat.side = THREE.DoubleSide;
+  const canvasMesh = new THREE.Mesh(geo, printMat);
+  const canvasGrp = new THREE.Group(); canvasGrp.add(canvasMesh); rig.add(canvasGrp);
+  let lastFold = -1;
+  function fold(a) {
+    if (Math.abs(a - lastFold) < 1e-4) return; lastFold = a;
+    const p = geo.attributes.position, c = Math.cos(a * Math.PI / 2), sn = Math.sin(a * Math.PI / 2);
+    for (let i = 0; i < p.count; i++) {
+      let x = base[i * 3], y = base[i * 3 + 1], z = 0;
+      const dx = Math.abs(x) - W / 2, dy = Math.abs(y) - H / 2;
+      if (dx > 1e-6) { x = Math.sign(x) * (W / 2 + dx * c); z -= dx * sn; }
+      if (dy > 1e-6) { y = Math.sign(y) * (H / 2 + dy * c); z -= dy * sn; }
+      p.setXYZ(i, x, y, z);
+    }
+    p.needsUpdate = true; geo.computeVertexNormals();
+  }
+
+  const shadow = floorShadow(scene, 3.2, 1.1);
+  const sheet = makeSheet(tex, CW, CH);
+  canvasGrp.add(sheet.pivot);
+  const mouse = { x: 0, y: 0 };
+  ctx.onPointer = (x, y) => { mouse.x = x; mouse.y = y; };
+
+  return {
+    update(p, t, L) {
+      const ph = phases(p);
+      const s = rigMotion(rig, ph, t, L, mouse, { fit: .88, ry0: -.6, ryShow: .6, rxShow: -.12 });
+      shadow(L.x, L.y + (-CH / 2 - .3) * s, s, ph.enter);
+      setPrint(printMat, ph.press);
+      // la tela stampata si appoggia sul telaio e i bordi si ripiegano
+      const onFrame = ease(seg(p, .76, .84));
+      canvasGrp.position.z = lerp(.75, .004, onFrame);
+      fold(ease(seg(p, .8, .9)));
+      frame.visible = ph.enter > .01;
+      sheet.fly(ph, new THREE.Vector3(0, CH / 2, .6), new THREE.Vector3(0, CH / 2, .012));
+      sheet.shape((x, y) => [x, y, 0], 'flat');
+      sheet.peel(ease(seg(p, .72, .78)));
+      sheet.ink(ph, seg(p, .74, .78));
+    }
+  };
+}
+
+/* =========================================================
+   SCENA: STAMPA A PIUMA — stampa UV diretta su pannello rigido leggero
+   ========================================================= */
+function scenePiuma(ctx) {
+  const { scene, photo } = ctx;
+  const W = 2.1, H = 1.45, T = .06;
+  const tex = photo.target(W / H);
+  const rig = new THREE.Group(); scene.add(rig);
+  const foam = new THREE.MeshStandardMaterial({ color: '#f7f7f4', roughness: .95 });
+  const printMat = printMaterial(tex, { base: '#fbfbfa', roughness: .4, glow: [.45, .55, 1.3] });
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(W, H, T, 1, 1, 1), [foam, foam, foam, foam, printMat, foam]);
+  rig.add(panel);
+
+  // testina di stampa UV che scorre sul pannello
+  const head = new THREE.Group(); rig.add(head);
+  const headBody = new THREE.Mesh(new RoundedBoxGeometry(W + .45, .16, .2, 3, .04), new THREE.MeshStandardMaterial({ color: '#30343b', metalness: .4, roughness: .35 }));
+  const uvLight = new THREE.Mesh(new THREE.BoxGeometry(W + .1, .025, .02), new THREE.MeshStandardMaterial({ color: '#8fa8ff', emissive: '#7f95ff', emissiveIntensity: 2 }));
+  uvLight.position.set(0, -.07, -.06);
+  const railMat = new THREE.MeshStandardMaterial({ color: '#b9bec6', metalness: .9, roughness: .25 });
+  head.add(headBody, uvLight);
+  const rails = new THREE.Group(); rig.add(rails);
+  [-1, 1].forEach(sx => { const r = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, H + .5, 16), railMat); r.position.set(sx * (W / 2 + .25), 0, .15); rails.add(r); });
+
+  const shadow = floorShadow(scene, 3.2, 1.1);
+  const sheet = makeSheet(tex, W, H);
+  rig.add(sheet.pivot);
+  const mouse = { x: 0, y: 0 };
+  ctx.onPointer = (x, y) => { mouse.x = x; mouse.y = y; };
+
+  return {
+    update(p, t, L) {
+      const ph = phases(p);
+      const s = rigMotion(rig, ph, t, L, mouse, { fit: .9, ry0: -.55, ryShow: .55, rxShow: -.55 });
+      shadow(L.x, L.y + (-H / 2 - .35) * s, s, ph.enter);
+      setPrint(printMat, ph.press);
+      // la testina entra, passa dall'alto in basso insieme alla stampa ed esce
+      const hv = seg(p, .42, .5) * (1 - seg(p, .76, .84));
+      head.visible = rails.visible = hv > .01;
+      head.scale.setScalar(Math.max(.001, hv)); rails.scale.set(1, Math.max(.001, hv), 1);
+      const rv = lerp(-0.08, 1.08, ease(ph.press));
+      head.position.set(0, lerp(H / 2 + .35, H / 2 - clamp(rv) * H, seg(p, .46, .5)) - (p > .74 ? seg(p, .74, .8) * .4 : 0), .16);
+      // il file della foto resta sospeso e "si trasferisce" nella testina
+      sheet.fly({ ...ph, land: 0 }, new THREE.Vector3(0, H / 2, .9), new THREE.Vector3(0, H / 2, .9));
+      sheet.shape((x, y) => [x, y, 0], 'flat');
+      sheet.pivot.scale.multiplyScalar(lerp(1, .85, ph.land));
+      sheet.ink(ph, seg(ph.press, .15, .6));
+    }
+  };
+}
+
+/* =========================================================
+   SCENA: CALENDARIO — foto stampata sul mese, poi si gira pagina
+   ========================================================= */
+const MESI = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
+function monthTexture(year, month) {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 600;
+  const g = c.getContext('2d');
+  const gold = (getComputedStyle(document.documentElement).getPropertyValue('--gold') || '').trim() || '#b8923a';
+  const ink = (getComputedStyle(document.documentElement).getPropertyValue('--navy') || '').trim() || '#1c2b4a';
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, 1024, 600);
+  g.fillStyle = ink; g.font = '600 64px Georgia, serif'; g.textAlign = 'left';
+  g.fillText(MESI[month], 40, 78);
+  g.fillStyle = gold; g.font = '400 40px Georgia, serif'; g.textAlign = 'right'; g.fillText(String(year), 984, 76);
+  const days = ['L', 'M', 'M', 'G', 'V', 'S', 'D'], cw = 944 / 7;
+  g.font = '600 30px Arial, sans-serif'; g.textAlign = 'center';
+  days.forEach((d, i) => { g.fillStyle = i === 6 ? gold : '#8a8f9a'; g.fillText(d, 40 + cw * i + cw / 2, 140); });
+  g.fillStyle = '#e6e1d6'; g.fillRect(40, 158, 944, 2);
+  const first = (new Date(year, month, 1).getDay() + 6) % 7, n = new Date(year, month + 1, 0).getDate();
+  g.font = '400 34px Arial, sans-serif';
+  for (let d = 1; d <= n; d++) {
+    const k = first + d - 1, col = k % 7, row = Math.floor(k / 7);
+    g.fillStyle = col === 6 ? gold : ink;
+    g.fillText(String(d), 40 + cw * col + cw / 2, 212 + row * 72);
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
+function sceneCalendario(ctx) {
+  const { scene, photo } = ctx;
+  const W = 1.5, H = 2.1, PW = W - .16, PH = 1.05, GH = .78;
+  const now = new Date();
+  const rig = new THREE.Group(); scene.add(rig);
+  const cal = new THREE.Group(); cal.position.y = H / 2; rig.add(cal); // origine sulla spirale
+
+  const board = new THREE.Mesh(new THREE.BoxGeometry(W + .04, H + .04, .03), new THREE.MeshStandardMaterial({ color: '#e7e1d4', roughness: .9 }));
+  board.position.set(0, -H / 2, -.04); cal.add(board);
+
+  // 3 mesi: il primo viene stampato, i successivi mostrano altre inquadrature della stessa foto
+  const variants = [{}, { zoom: 1.45, ox: .4, oy: -.2 }, { filter: 'grayscale(1)', zoom: 1.2, ox: -.5 }];
+  const pages = [];
+  let printMat;
+  variants.forEach((v, i) => {
+    const m = (now.getMonth() + i) % 12, y = now.getFullYear() + Math.floor((now.getMonth() + i) / 12);
+    const page = new THREE.Group(); page.position.z = .012 * (variants.length - i); cal.add(page);
+    const paperMat = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: .85, side: THREE.DoubleSide, transparent: true });
+    const paper = new THREE.Mesh(new THREE.PlaneGeometry(W, H), paperMat); paper.position.y = -H / 2; page.add(paper);
+    const tex = photo.target(PW / PH, v);
+    const mat = i === 0 ? (printMat = printMaterial(tex, { base: '#f3f1ec', roughness: .5 })) : new THREE.MeshStandardMaterial({ map: tex, roughness: .5 });
+    mat.transparent = true;
+    const ph = new THREE.Mesh(new THREE.PlaneGeometry(PW, PH), mat); ph.position.set(0, -.12 - PH / 2, .002); page.add(ph);
+    const gridMat = new THREE.MeshStandardMaterial({ map: monthTexture(y, m), roughness: .9, transparent: true });
+    const grid = new THREE.Mesh(new THREE.PlaneGeometry(PW, GH), gridMat); grid.position.set(0, -.12 - PH - .06 - GH / 2, .002); page.add(grid);
+    pages.push({ page, mats: [paperMat, mat, gridMat] });
+  });
+
+  // spirale e gancio
+  const metal = new THREE.MeshStandardMaterial({ color: '#3a3d42', metalness: .9, roughness: .3 });
+  for (let i = 0; i < 17; i++) {
+    const r = new THREE.Mesh(new THREE.TorusGeometry(.04, .008, 8, 20), metal);
+    r.rotation.y = Math.PI / 2; r.position.set(-W / 2 + .1 + i * (W - .2) / 16, .0, .0); cal.add(r);
+  }
+  const hook = new THREE.Mesh(new THREE.TorusGeometry(.12, .01, 8, 32, Math.PI), metal);
+  hook.position.set(0, .03, -.02); cal.add(hook);
+
+  const shadow = floorShadow(scene, 2.4, 1);
+  const sheet = makeSheet(pages[0].mats[1].map, PW, PH);
+  pages[0].page.add(sheet.pivot);
+  const mouse = { x: 0, y: 0 };
+  ctx.onPointer = (x, y) => { mouse.x = x; mouse.y = y; };
+
+  return {
+    update(p, t, L) {
+      const ph = phases(p);
+      const s = rigMotion(rig, ph, t, L, mouse, { fit: .85, yOff: -.05, ry0: -.6, ryShow: .35 });
+      shadow(L.x, L.y + (-H / 2 - .35) * s, s, ph.enter);
+      setPrint(printMat, ph.press);
+      // si gira pagina: il mese stampato si solleva sopra la spirale e compare il mese successivo
+      const flip = ease(seg(p, .8, .93));
+      pages[0].page.rotation.x = -flip * Math.PI * .92;
+      const fade = 1 - seg(p, .88, .95);
+      pages[0].mats.forEach(m => { m.opacity = fade; });
+      pages[0].page.visible = fade > .01;
+      sheet.fly(ph, new THREE.Vector3(0, -.12, .7), new THREE.Vector3(0, -.12, .014));
+      sheet.shape((x, y) => [x, y, 0], 'flat');
+      sheet.peel(ph.after);
+      sheet.ink(ph, seg(ph.after, .45, 1));
+    }
+  };
+}
+
+/* =========================================================
+   SCENA: FOTOLIBRO — foto stampata in copertina, poi il libro si apre
+   ========================================================= */
+function sceneFotolibro(ctx) {
+  const { scene, photo } = ctx;
+  const W = 1.5, H = 1.9, TH = .22, CT = .035;
+  const tex = photo.target(W / H);
+  const inner = photo.target((W - .36) / (H - .5), { zoom: 1.35, ox: -.3 });
+  const rig = new THREE.Group(); scene.add(rig);
+  const book = new THREE.Group(); rig.add(book);
+  const cloth = new THREE.MeshStandardMaterial({ color: '#23324d', roughness: .75 });
+  const endpaper = new THREE.MeshStandardMaterial({ color: '#efe8da', roughness: .9 });
+  const pagesMat = new THREE.MeshStandardMaterial({ color: '#f6f3ec', roughness: .95 });
+
+  const back = new THREE.Mesh(new THREE.BoxGeometry(W, H, CT), [cloth, cloth, cloth, cloth, endpaper, cloth]);
+  back.position.set(0, 0, -TH / 2 + CT / 2); book.add(back);
+  const block = new THREE.Mesh(new THREE.BoxGeometry(W - .08, H - .08, TH - 2 * CT - .01), pagesMat);
+  block.position.set(.02, 0, 0); book.add(block);
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(CT, H, TH), cloth);
+  spine.position.set(-W / 2 + CT / 2, 0, 0); book.add(spine);
+  // pagina interna con la foto
+  const pageTop = TH / 2 - CT - .004;
+  const innerPhoto = new THREE.Mesh(new THREE.PlaneGeometry(W - .36, H - .5), new THREE.MeshStandardMaterial({ map: inner, roughness: .6 }));
+  innerPhoto.position.set(.04, .05, pageTop + .002); book.add(innerPhoto);
+
+  // copertina: cerniera sul dorso
+  const hinge = new THREE.Group(); hinge.position.set(-W / 2, 0, TH / 2 - CT / 2); book.add(hinge);
+  const printMat = printMaterial(tex, { base: '#f1ede4', roughness: .45 });
+  const cover = new THREE.Mesh(new THREE.BoxGeometry(W, H, CT), [cloth, cloth, cloth, cloth, printMat, endpaper]);
+  cover.position.x = W / 2; hinge.add(cover);
+
+  const shadow = floorShadow(scene, 2.6, 1);
+  const sheet = makeSheet(tex, W, H);
+  hinge.add(sheet.pivot);
+  const mouse = { x: 0, y: 0 };
+  ctx.onPointer = (x, y) => { mouse.x = x; mouse.y = y; };
+
+  return {
+    update(p, t, L) {
+      const ph = phases(p);
+      const s = rigMotion(rig, ph, t, L, mouse, { fit: .88, ry0: -.8, ryShow: .3, rxShow: -.1 });
+      shadow(L.x, L.y + (-H / 2 - .3) * s, s, ph.enter);
+      setPrint(printMat, ph.press);
+      // il libro si apre: la copertina ruota sul dorso e il libro si ricentra
+      const open = ease(seg(p, .78, .94));
+      hinge.rotation.y = -open * Math.PI * .97;
+      book.position.x = open * W / 2;
+      sheet.fly(ph, new THREE.Vector3(W / 2, H / 2, .7), new THREE.Vector3(W / 2, H / 2, CT / 2 + .006));
+      sheet.shape((x, y) => [x, y, 0], 'flat');
+      sheet.peel(ease(seg(p, .72, .8)));
+      sheet.ink(ph, seg(p, .75, .8));
+    }
+  };
+}
+
 const SCENES = {
   cuscino: makeSoftScene({ w: 1, h: 1, D: .34, pinch: .07, print: .86, fabric: '#f2ede3', piping: .022 }),
   borsa: makeSoftScene({ w: .85, h: .95, D: .1, pinch: .025, print: .8, fabric: '#ece3cf', piping: .012, handles: true, fit: .82, yOff: -.35, ry0: -.6, ryShow: .45 }),
   tazza: sceneTazza,
   cover: sceneCover,
   puzzle: scenePuzzle,
-  magnete: sceneMagnete
+  magnete: sceneMagnete,
+  piuma: scenePiuma,
+  tela: sceneTela,
+  calendario: sceneCalendario,
+  fotolibro: sceneFotolibro
 };
 
 /* =========================================================
