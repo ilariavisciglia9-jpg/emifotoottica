@@ -22,3 +22,9 @@
   .brand-gallery__nav{display:none;}
   .brand-gallery__slide{flex-basis:85%;}
 }
+
+/* Segnaposto quando le foto del marchio non sono ancora caricate */
+.brand-gallery__slide--ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.7rem;text-align:center;
+  background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(201,162,75,.16),transparent 70%),var(--navy,#1c2b4a);color:var(--gold,#c9a24b);border-color:transparent;}
+.brand-gallery__ph-name{font-family:var(--font-h,Georgia,serif);font-size:1.35rem;font-weight:700;color:#fff;}
+.brand-gallery__ph-txt{font-size:.72rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.55);}
