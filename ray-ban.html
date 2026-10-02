@@ -104,7 +104,7 @@
   </style>
   <link rel="icon" type="image/png" href="images/logo-emi.png?v=2">
   <link rel="apple-touch-icon" href="images/logo-emi.png?v=2">
-  <link rel="stylesheet" href="brand-carousel.css">
+  <link rel="stylesheet" href="brand-carousel.css?v=2">
 </head>
 <body>
   <div id="site-header"></div>
@@ -256,7 +256,7 @@
     const _obs=new IntersectionObserver((e)=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');_obs.unobserve(x.target);}})},{threshold:.12});
     document.querySelectorAll('.reveal').forEach(el=>_obs.observe(el));
   </script>
-  <script src="brand-carousel.js"></script>
+  <script src="brand-carousel.js?v=2"></script>
   <script type="module" src="ray-ban-3d.js"></script>
 </body>
 </html>

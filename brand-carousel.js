@@ -8,6 +8,19 @@
     var dotsBox = root.querySelector('.brand-gallery__dots');
     var timer = null;
 
+    /* Nessuna foto ancora caricata: mostra 3 schede segnaposto eleganti */
+    function placeholders() {
+      var nameEl = root.querySelector('.brand-gallery__title span');
+      var brand = nameEl ? nameEl.textContent : '';
+      var svg = '<svg viewBox="0 0 120 50" width="120" height="50" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6" y="10" width="44" height="30" rx="12"/><rect x="70" y="10" width="44" height="30" rx="12"/><path d="M50 20q10-7 20 0"/><path d="M6 18L1 14M114 18l5-4"/></svg>';
+      for (var i = 0; i < 3; i++) {
+        var f = document.createElement('figure');
+        f.className = 'brand-gallery__slide brand-gallery__slide--ph';
+        f.innerHTML = svg + '<span class="brand-gallery__ph-name">' + brand + '</span><span class="brand-gallery__ph-txt">Nuove foto in arrivo</span>';
+        track.appendChild(f);
+      }
+    }
+
     function slides() { return Array.prototype.slice.call(track.querySelectorAll('.brand-gallery__slide')); }
     function step() { var s = slides()[0]; return s ? s.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap || 0) : track.clientWidth; }
     function pages() { var n = slides().length, per = Math.max(1, Math.round(track.clientWidth / step())); return Math.max(1, n - per + 1); }
@@ -40,7 +53,7 @@
 
     slides().forEach(function (s) {
       var img = s.querySelector('img');
-      function drop() { s.remove(); if (!slides().length) root.style.display = 'none'; buildDots(); }
+      function drop() { s.remove(); if (!slides().length) placeholders(); buildDots(); }
       if (img.complete && img.naturalWidth === 0) drop();
       else img.addEventListener('error', drop);
     });
