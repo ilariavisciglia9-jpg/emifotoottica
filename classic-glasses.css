@@ -58,7 +58,7 @@
 
 @media (max-width:900px){
   .cg-sticky-col{position:static;}
-  .cg-story__track{height:220vh;}
+  .cg-story__track{height:300vh;}
   .cg-story__sticky{position:sticky;top:70px;height:58vh;}
   /* le etichette restano visibili e diventano toccabili invece di sparire */
   .cg-label{width:34px;height:34px;}
@@ -96,7 +96,7 @@
 
 /* Rete di sicurezza generale: niente scroll orizzontale, niente testo tagliato */
 @media (max-width:600px){
-  html,body{overflow-x:hidden;}
+  html,body{overflow-x:clip;}
   .spec-table{display:block;overflow-x:auto;}
   h1,h2,h3{overflow-wrap:break-word;}
 }
