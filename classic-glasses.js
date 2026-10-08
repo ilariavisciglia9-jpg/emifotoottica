@@ -547,6 +547,11 @@ const models = [];
     sticky.appendChild(el);
     el.addEventListener('mouseenter', () => showHoverInfo(l));
     el.addEventListener('mouseleave', hideHoverInfo);
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (hovering && hoverEyebrow.textContent === l.text) hideHoverInfo();
+      else showHoverInfo(l);
+    });
     return { el, part: model.parts.find(p => p.name === l.part) };
   });
 
@@ -568,6 +573,8 @@ const models = [];
     hoverInfo.classList.remove('on');
     steps.forEach((s, i) => s.classList.toggle('on', i === stepNow));
   }
+  // su mobile, toccando fuori da un'etichetta si chiude il dettaglio aperto
+  sticky.addEventListener('click', () => { if (hovering) hideHoverInfo(); });
 
   let W = 1, H = 1;
   function resize() {
@@ -580,7 +587,8 @@ const models = [];
 
   const getProgress = () => {
     const r = track.getBoundingClientRect();
-    return clamp(-r.top / Math.max(1, r.height - innerHeight));
+    const top = parseFloat(getComputedStyle(sticky).top) || 0;
+    return clamp((top - r.top) / Math.max(1, r.height - sticky.clientHeight));
   };
 
   let active = false, running = false, stepNow = -1;
