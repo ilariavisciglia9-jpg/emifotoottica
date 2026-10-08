@@ -383,17 +383,21 @@
           if(res.ok && (res.d.success === true || res.d.success === 'true')){
             form.reset();
             show('ok', 'Grazie! Il tuo messaggio è stato inviato. Ti risponderemo entro 24 ore.');
+            btn.disabled = false; label.textContent = 'Invia Messaggio';
           } else {
+            // risposta del servizio: la stampo in console (utile per capire il motivo)
+            console.warn('FormSubmit ha risposto:', res.d);
             throw new Error('send failed');
           }
         })
-        .catch(function(){
-          show('err', 'Non siamo riusciti a inviare il messaggio. Riprova oppure chiamaci al 351 777 4492 o scrivi a info@emifotoottica.it.');
-        })
-        .then(function(){ btn.disabled = false; label.textContent = 'Invia Messaggio'; });
+        .catch(function(err){
+          // Piano B: invio classico (la pagina passa da FormSubmit e poi torna qui con ?inviato=1)
+          console.warn('Invio senza ricaricare non riuscito, uso l\'invio classico.', err);
+          label.textContent = 'Invio in corso…';
+          form.submit();
+        });
       });
     })();
   </script>
 </body>
 </html>
-
