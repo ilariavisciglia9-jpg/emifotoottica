@@ -189,7 +189,9 @@ function buildModel(color) {
     case 'rhinestone': return makeRhinestoneClassic(color);
     case 'pantos': return makePantosClassic(color);
     case 'aviator': return makeAviatorClassic(color);
-    case 'pilot': return makePilotClassic(color);
+    case 'pilot': return makePilotClassic(color, cfg.detail);
+    case 'cateye': return makeCatEyeClassic(color, cfg.detail);
+    case 'chunky': return makeChunkyClassic(color, cfg.detail);
     case 'wraparound': return makeWraparoundClassic(color, cfg.detail);
     default: return makeWayfarerClassic(color);
   }
@@ -506,18 +508,18 @@ function makeAviatorClassic(frameColor) {
 }
 
 /* --- Polaroid: pilot in acetato havana, lenti sfumate blu, punta arcobaleno --- */
-function makeTortoiseTexture() {
+function makeTortoiseTexture(base = '#6a431f', dark = 'rgba(30,15,6,.55)', light = 'rgba(214,150,58,.5)') {
   const c = document.createElement('canvas'); c.width = c.height = 512;
-  const ctx = c.getContext('2d'), rnd = seeded(7);
-  ctx.fillStyle = '#6a431f'; ctx.fillRect(0, 0, 512, 512);
+  const ctx = c.getContext('2d'), rnd = seeded(7), dk = dark, lt = light;
+  ctx.fillStyle = base; ctx.fillRect(0, 0, 512, 512);
   try { ctx.filter = 'blur(7px)'; } catch (e) {}
   for (let i = 0; i < 230; i++) {
-    const x = rnd() * 512, y = rnd() * 512, rx = 12 + rnd() * 46, ry = 8 + rnd() * 30, dark = rnd() < .5;
-    ctx.fillStyle = dark ? 'rgba(30,15,6,.55)' : 'rgba(214,150,58,.5)';
+    const x = rnd() * 512, y = rnd() * 512, rx = 12 + rnd() * 46, ry = 8 + rnd() * 30, dark = rnd() < .5, darkC = dk, lightC = lt;
+    ctx.fillStyle = dark ? darkC : lightC;
     ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rnd() * Math.PI, 0, Math.PI * 2); ctx.fill();
   }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(.7, .7);
+  t.wrapS = t.wrapT = THREE.MirroredRepeatWrapping; t.repeat.set(.7, .7);
   return t;
 }
 function makeRainbowTexture() {
@@ -526,12 +528,13 @@ function makeRainbowTexture() {
   ['#e63a2e', '#f08a24', '#f4d03a', '#3fa84a', '#2f6fd0'].forEach((col, i) => { ctx.fillStyle = col; ctx.fillRect(0, i * 16, 16, 16); });
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
-function makePilotClassic(frameColor) {
+function makePilotClassic(frameColor, detail) {
   const m = newModel();
-  const tex = makeTortoiseTexture();
+  const rb = detail === 'rayban';
+  const tex = rb ? makeTortoiseTexture('#5a3418', 'rgba(25,12,5,.5)', 'rgba(200,140,60,.45)') : makeTortoiseTexture();
   const acetate = new THREE.MeshPhysicalMaterial({ color: frameColor, map: tex, roughness: .3, metalness: 0, clearcoat: .6, clearcoatRoughness: .15, envMapIntensity: .8 });
   const lens = new THREE.MeshPhysicalMaterial({
-    map: gradTexture([[0, '#2f58b0'], [.5, '#7399d8'], [1, '#dfe8f2']], false),
+    map: rb ? gradTexture([[0, '#5a3410'], [.55, '#9a7048'], [1, '#dcc8b2']], false) : gradTexture([[0, '#2f58b0'], [.5, '#7399d8'], [1, '#dfe8f2']], false),
     roughness: .05, metalness: .15, transparent: true, opacity: .82, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.6
   });
   const rainbow = new THREE.MeshBasicMaterial({ map: makeRainbowTexture() });
@@ -553,20 +556,121 @@ function makePilotClassic(frameColor) {
     const curve = [[0, 0, 0], [0, 0, -.6], [0, 0, -1.6], [-sd * .02, 0, -2.1], [-sd * .05, -.15, -2.5], [-sd * .06, -.4, -2.75]];
     const temple = new THREE.Mesh(tube(curve, .07, 60, 12), acetate);
     temple.position.set(sd * 1.98, .2, -.02); temple.scale.set(.75, 1.7, 1);
-    const tip = new THREE.Mesh(new THREE.BoxGeometry(.12, .05, .22), rainbow);
-    tip.position.set(-sd * .06, -.42, -2.7); tip.rotation.x = -.35;
-    temple.add(tip);
+    if (!rb) {
+      const tip = new THREE.Mesh(new THREE.BoxGeometry(.12, .05, .22), rainbow);
+      tip.position.set(-sd * .06, -.42, -2.7); tip.rotation.x = -.35;
+      temple.add(tip);
+    }
     m.add('temple' + id, temple, [sd * 1.1, .1, -1.3], [0, -sd * .25, 0], .03);
   }
   const bridge = new THREE.Mesh(tube([[-.32, .3, 0], [-.14, .46, 0], [.14, .46, 0], [.32, .3, 0]], .09, 32, 12), acetate);
   m.add('bridge', bridge, [0, 1.3, .9], [.5, 0, 0], .15);
+  if (rb) {
+    const topBar = new THREE.Mesh(tube([[-.55, .56, 0], [-.2, .62, 0], [.2, .62, 0], [.55, .56, 0]], .055, 32, 10), acetate);
+    m.add('topbar', topBar, [0, 1.0, .7], [.4, 0, 0], .12);
+  }
 
   m.frameMat = acetate;
-  m.labels = [
+  m.labels = rb ? [
+    { text: 'Lenti', side: 'r', part: 'lensR', title: 'Lenti sfumate', info: 'Lenti marroni sfumate con protezione UV 100%: comfort visivo e stile in ogni condizione di luce.' },
+    { text: 'Montatura', side: 'l', part: 'rimL', title: 'Montatura havana', info: 'Acetato havana lucido dalla linea pilot, il design Ray-Ban che non passa mai di moda.' },
+    { text: 'Aste', side: 'r', part: 'templeR', title: 'Aste con logo', info: 'Aste solide con il logo Ray-Ban: tenuta sicura e comfort tutto il giorno.' },
+    { text: 'Doppio ponte', side: 'l', part: 'topbar', title: 'Doppio ponte', info: 'Il caratteristico doppio ponte aviator: struttura robusta e look inconfondibile.' }
+  ] : [
     { text: 'Lenti', side: 'r', part: 'lensR', title: 'Lenti polarizzate', info: 'Lenti polarizzate sfumate con protezione UV 100%: eliminano i riflessi e migliorano il contrasto dei colori.' },
     { text: 'Montatura', side: 'l', part: 'rimL', title: 'Montatura havana', info: 'Acetato havana lucido dalla forma pilot, leggero e dal carattere deciso.' },
     { text: 'Aste', side: 'r', part: 'templeR', title: 'Punta arcobaleno', info: 'Aste in acetato con la caratteristica punta multicolore Polaroid.' },
     { text: 'Ponte', side: 'l', part: 'bridge', title: 'Ponte anatomico', info: 'Ponte rinforzato che distribuisce il peso in modo uniforme sul naso.' }
+  ];
+  return m;
+}
+
+/* --- cat-eye / butterfly: Burberry (havana scuro, lenti sfumate, stanghetta check) --- */
+function makeCatEyeClassic(frameColor, detail) {
+  const m = newModel();
+  const acetate = new THREE.MeshPhysicalMaterial({ color: frameColor, map: makeTortoiseTexture('#2a1507', 'rgba(8,3,1,.6)', 'rgba(165,90,25,.38)'), roughness: .25, metalness: 0, clearcoat: .8, clearcoatRoughness: .1, envMapIntensity: .9 });
+  const lens = new THREE.MeshPhysicalMaterial({
+    map: gradTexture([[0, '#6e4528'], [.55, '#a77c63'], [1, '#ecd8cf']], false),
+    roughness: .05, metalness: .12, transparent: true, opacity: .82, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.5
+  });
+  const cat = (pts, sd, a) => pts.map(p => {
+    const ox = p.x * sd; let y = p.y, x = p.x;
+    if (ox > 0 && y > 0) y += .42 * Math.pow(ox / a, 2) * (y / (a * .72));
+    if (ox < 0 && y < 0) x *= 1 + .08 * (y / (a * .72));
+    return new THREE.Vector2(x, y);
+  });
+  const X = 1.12;
+  for (const [sd, id] of [[-1, 'L'], [1, 'R']]) {
+    const outer = cat(superPoints(.95, .68, 2.5, 0, 128), sd, .95);
+    const inner = cat(superPoints(.8, .54, 2.4, 0, 128), sd, .8).map(p => new THREE.Vector2(p.x, p.y - .02));
+    const rimShape = shapeFrom(outer); rimShape.holes.push(pathFrom(inner));
+    const rimGeo = new THREE.ExtrudeGeometry(rimShape, { depth: .18, bevelEnabled: true, bevelThickness: .035, bevelSize: .03, bevelSegments: 4, steps: 1 });
+    rimGeo.translate(0, 0, -.09);
+    const rim = new THREE.Mesh(rimGeo, acetate); rim.position.set(sd * X, 0, 0);
+    const ln = new THREE.Mesh(lensGeoFrom(inner, 1.04), lens); ln.position.set(sd * X, 0, .02);
+    m.add('rim' + id, rim, [sd * .9, .35, .5], [.15, sd * .35, -sd * .1], .08);
+    m.add('lens' + id, ln, [sd * .6, -.1, 1.9], [0, sd * .15, 0], 0);
+
+    const curve = [[0, 0, 0], [0, 0, -.6], [0, 0, -1.6], [-sd * .02, 0, -2.1], [-sd * .05, -.15, -2.5], [-sd * .06, -.4, -2.75]];
+    const temple = new THREE.Mesh(tube(curve, .06, 60, 12), acetate);
+    temple.position.set(sd * 2.0, .3, -.02); temple.scale.set(.75, 1.7, 1);
+    if (sd === 1 && detail === 'burberry') {
+      const patch = makeCheckPatch(); patch.rotation.y = Math.PI / 2; patch.scale.set(1.4, .45, 1); patch.position.set(.1, 0, -1.0);
+      temple.add(patch);
+    }
+    m.add('temple' + id, temple, [sd * 1.1, .1, -1.3], [0, -sd * .25, 0], .03);
+  }
+  const bridge = new THREE.Mesh(tube([[-.3, .34, 0], [-.12, .44, 0], [.12, .44, 0], [.3, .34, 0]], .075, 32, 12), acetate);
+  m.add('bridge', bridge, [0, 1.3, .9], [.5, 0, 0], .15);
+
+  m.frameMat = acetate;
+  m.labels = [
+    { text: 'Lenti', side: 'r', part: 'lensR', title: 'Lenti sfumate', info: 'Lenti sfumate con protezione UV 100%, per una visione nitida e un look sofisticato.' },
+    { text: 'Montatura', side: 'l', part: 'rimL', title: 'Montatura cat-eye', info: 'Acetato havana lucido dalla forma morbida e femminile, con angolo esterno rialzato.' },
+    { text: 'Aste', side: 'r', part: 'templeR', title: 'Dettaglio check', info: 'Sulle aste il celebre motivo check Burberry, firma inconfondibile del marchio.' },
+    { ...L_PONTE, part: 'bridge' }
+  ];
+  return m;
+}
+
+/* --- chunky: Genny (acetato spesso a mascherina, doppio ponte a chiave) --- */
+function makeChunkyClassic(frameColor, detail) {
+  const m = newModel();
+  const acetate = new THREE.MeshPhysicalMaterial({ color: frameColor, map: makeTortoiseTexture('#6e3f12', 'rgba(20,9,3,.6)', 'rgba(235,150,40,.6)'), roughness: .25, metalness: 0, clearcoat: .8, clearcoatRoughness: .1, envMapIntensity: .9 });
+  const lens = new THREE.MeshPhysicalMaterial({
+    map: gradTexture([[0, '#6b4a22'], [.5, '#9a7a48'], [1, '#d6bf94']], false),
+    roughness: .05, metalness: .1, transparent: true, opacity: .85, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.4
+  });
+  const outer = flattenTop(superPoints(1.05, .66, 3.4, .1, 128), .66, .96, .45);
+  const inner = flattenTop(superPoints(.8, .46, 3.0, .08, 128), .46, .94, .42).map(p => new THREE.Vector2(p.x, p.y - .05));
+  const rimShape = shapeFrom(outer); rimShape.holes.push(pathFrom(inner));
+  const rimGeo = new THREE.ExtrudeGeometry(rimShape, { depth: .26, bevelEnabled: true, bevelThickness: .05, bevelSize: .04, bevelSegments: 4, steps: 1 });
+  rimGeo.translate(0, 0, -.13);
+  const lensGeo = lensGeoFrom(inner, 1.04);
+  const X = 1.22;
+  for (const [sd, id] of [[-1, 'L'], [1, 'R']]) {
+    const rim = new THREE.Mesh(rimGeo, acetate); rim.position.set(sd * X, 0, 0);
+    const ln = new THREE.Mesh(lensGeo, lens); ln.position.set(sd * X, 0, .03);
+    m.add('rim' + id, rim, [sd * .9, .35, .5], [.15, sd * .35, -sd * .1], .08);
+    m.add('lens' + id, ln, [sd * .6, -.1, 1.9], [0, sd * .15, 0], 0);
+
+    const curve = [[0, 0, 0], [0, 0, -.6], [0, 0, -1.6], [-sd * .02, 0, -2.1], [-sd * .05, -.15, -2.5], [-sd * .06, -.4, -2.75]];
+    const temple = new THREE.Mesh(tube(curve, .075, 60, 12), acetate);
+    temple.position.set(sd * 2.2, .22, -.02); temple.scale.set(.8, 1.9, 1);
+    m.add('temple' + id, temple, [sd * 1.1, .1, -1.3], [0, -sd * .25, 0], .03);
+  }
+  const bridge = new THREE.Mesh(tube([[-.28, .3, 0], [-.12, .38, 0], [.12, .38, 0], [.28, .3, 0]], .085, 32, 12), acetate);
+  m.add('bridge', bridge, [0, 1.3, .9], [.5, 0, 0], .15);
+  const topBar = new THREE.Mesh(new THREE.BoxGeometry(.9, .14, .24), acetate);
+  topBar.position.set(0, .56, 0);
+  m.add('topbar', topBar, [0, 1.0, .8], [.4, 0, 0], .12);
+
+  m.frameMat = acetate;
+  m.labels = [
+    { text: 'Lenti', side: 'r', part: 'lensR', title: 'Lenti sfumate', info: 'Lenti sfumate con protezione UV 100%, per una visione nitida e un look deciso.' },
+    { text: 'Montatura', side: 'l', part: 'rimL', title: 'Montatura oversize', info: 'Acetato spesso dalla forma a mascherina, un accessorio di carattere che fa tendenza.' },
+    { ...L_ASTE, part: 'templeR' },
+    { text: 'Doppio ponte', side: 'l', part: 'topbar', title: 'Ponte a chiave', info: 'Il doppio ponte a chiave dà struttura alla montatura e un tocco grafico inconfondibile.' }
   ];
   return m;
 }
