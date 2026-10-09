@@ -7,104 +7,18 @@
   <meta name="keywords" content="Ray-Ban Roma, occhiali Ray-Ban Roma, Wayfarer Roma, Aviator Roma, EmiFotoOttica, ottica Roma">
   <link rel="canonical" href="https://www.emifotoottica.it/ray-ban.html">
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="header-footer.css">
-  <link rel="stylesheet" href="brand-carousel.css?v=2">
-      <link rel="icon" type="image/png" href="images/logo-emi.png?v=2">
-  <link rel="apple-touch-icon" href="images/logo-emi.png?v=2">
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Product","name":"Occhiali Ray-Ban","brand":{"@type":"Brand","name":"Ray-Ban"},"offers":{"@type":"AggregateOffer","seller":{"@type":"LocalBusiness","name":"EmiFotoOttica","address":"Via Francesco Merlini 23/25 Roma"}}}
   </script>
+  <link rel="stylesheet" href="header-footer.css">
+  <link rel="stylesheet" href="classic-glasses.css">
   <script type="importmap">
   {"imports":{"three":"./three.module.min.js"}}
   </script>
   <link rel="modulepreload" href="three.module.min.js">
-  <style>
-    /* --- animazione 3D dedicata alla pagina Ray-Ban --- */
-    .brand-hero{position:relative;overflow:hidden;}
-    .brand-hero .container{position:relative;z-index:1;}
-    .rb-hero-canvas{position:absolute;top:0;right:-4%;width:58%;height:100%;pointer-events:none;
-      opacity:0;transition:opacity 1s ease;}
-    .rb-hero-canvas.ready{opacity:1;}
-    .rb-hero-canvas canvas{width:100%;height:100%;display:block;}
-    @media (max-width:900px){
-      .brand-hero{height:auto !important;min-height:0 !important;overflow:visible;
-        padding-top:1.25rem !important;padding-bottom:1.5rem !important;}
-      .brand-hero .container{display:block !important;padding-top:0 !important;}
-      .rb-hero-canvas{position:relative !important;top:auto !important;left:auto !important;right:auto !important;
-        width:68% !important;max-width:280px;height:190px !important;
-        margin:0 auto 1.1rem !important;opacity:1 !important;}
-    }
-    @media (max-width:600px){
-      .brand-hero__name{font-size:2.1rem !important;line-height:1.05 !important;}
-      .brand-hero__desc{font-size:.85rem !important;line-height:1.55 !important;}
-      .brand-hero__meta{gap:.4rem !important;}
-      .brand-meta-pill{font-size:.68rem !important;padding:.35rem .6rem !important;}
-    }
-    @media (max-width:900px){
-      .container[style*="grid-template-columns:1fr 1fr"]{display:block !important;}
-      .container[style*="grid-template-columns:1fr 1fr"] > div + div{margin-top:2rem;}
-    }
-    @media (max-width:600px){
-      html,body{overflow-x:clip;}
-      .spec-table{display:block;overflow-x:auto;}
-      h1,h2,h3{overflow-wrap:break-word;}
-    }
-
-    .brand-colors{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.3rem;align-items:center;}
-    .brand-colors__label{font:600 .68rem var(--font-b,system-ui,sans-serif);letter-spacing:.16em;
-      text-transform:uppercase;color:rgba(255,255,255,.5);margin-right:.3rem;}
-    .brand-color-dot{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.25);
-      cursor:pointer;transition:transform .2s ease, border-color .2s ease;padding:0;}
-    .brand-color-dot:hover{transform:scale(1.14);}
-    .brand-color-dot.active{border-color:var(--gold,#c9a24b);transform:scale(1.16);
-      box-shadow:0 0 0 2px rgba(201,162,75,.25);}
-
-    /* colonna sinistra (scheda tecnica) resta agganciata mentre scorre la storia a destra */
-    .rb-sticky-col{position:sticky;top:96px;align-self:start;}
-
-    .rb-story__track{position:relative;height:260vh;}
-    .rb-story__sticky{position:sticky;top:96px;height:calc(100vh - 116px);min-height:480px;
-      border-radius:var(--r);overflow:hidden;
-      background:radial-gradient(ellipse 60% 50% at 50% 40%, rgba(201,162,75,.16), transparent 70%),
-                 linear-gradient(180deg,#0a2540 0%, #06182b 100%);}
-    .rb-story__canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
-    .rb-story__copy{position:absolute;left:0;right:0;bottom:7%;padding:0 1.5rem;text-align:center;pointer-events:none;}
-    .rb-step{position:absolute;left:0;right:0;bottom:0;opacity:0;transform:translateY(16px);
-      transition:opacity .5s ease, transform .5s ease;}
-    .rb-step.on{opacity:1;transform:none;}
-    .rb-step__eyebrow{font-family:var(--font-b);font-size:.75rem;font-weight:700;letter-spacing:.25em;
-      text-transform:uppercase;color:var(--gold);margin:0 0 .5rem;}
-    .rb-step__title{font-family:var(--font-h);color:#fff;font-size:1.5rem;font-weight:700;margin:0 0 .5rem;}
-    .rb-step__text{color:rgba(255,255,255,.72);font-size:.95rem;line-height:1.65;max-width:440px;margin:0 auto;}
-    .rb-label{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;
-      display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;will-change:transform;
-      cursor:pointer;transition:opacity .4s ease, background .2s ease, transform .2s ease;}
-    .rb-label::before{content:"";width:8px;height:8px;border-radius:50%;
-      background:var(--gold,#c9a24b);box-shadow:0 0 0 4px rgba(201,162,75,.25);}
-    .rb-label:hover{background:rgba(201,162,75,.2);transform:scale(1.35);}
-    .rb-label span{position:absolute;color:#fff;font:600 .68rem var(--font-b,system-ui,sans-serif);letter-spacing:.14em;
-      text-transform:uppercase;white-space:nowrap;padding-bottom:4px;border-bottom:1px solid rgba(201,162,75,.65);
-      left:34px;top:9px;pointer-events:none;}
-    .rb-label.l span{left:auto;right:34px;}
-    .rb-step--hover{display:none;}
-    .rb-step--hover.on{display:block;}
-    @media (max-width:900px){
-      .rb-sticky-col{position:static;}
-      .rb-story__track{height:300vh;}
-      .rb-story__sticky{position:sticky;top:70px;height:58vh;}
-      .rb-label{width:34px;height:34px;}
-      /* il testo resta ancorato in basso dentro il riquadro (l'animazione a scroll
-         resta intatta), ma con un fondo scuro pieno per restare sempre leggibile */
-      .rb-story__copy{
-        left:0;right:0;bottom:0;top:auto;padding:1.2rem 1.25rem 1.4rem;
-        background:linear-gradient(180deg, rgba(6,24,43,0) 0%, rgba(6,24,43,.55) 28%, rgba(6,24,43,.95) 60%, rgba(6,24,43,.98) 100%);
-      }
-      .rb-step__text{max-width:100%;}
-    }
-    @media (prefers-reduced-motion:reduce){
-      .rb-hero-canvas, .rb-step{transition:opacity .4s ease;}
-    }
-  </style>
+  <link rel="icon" type="image/png" href="images/favicon.png?v=3">
+  <link rel="apple-touch-icon" href="images/favicon.png?v=3">
+  <link rel="stylesheet" href="brand-carousel.css?v=2">
 </head>
 <body>
   <div id="site-header"></div>
@@ -112,7 +26,7 @@
 
   <!-- BRAND HERO -->
   <div class="brand-hero">
-    <div class="rb-hero-canvas" id="rbHeroStage"><canvas id="rbHeroCanvas"></canvas></div>
+    <div class="cg-hero-canvas" id="cgHeroStage"><canvas id="cgHeroCanvas"></canvas></div>
     <div class="container">
       <a href="occhiali.html" style="display:inline-flex;align-items:center;gap:.4rem;color:rgba(255,255,255,.4);font-size:.82rem;margin-bottom:2rem;transition:color .3s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='rgba(255,255,255,.4)'">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -128,7 +42,7 @@
         <span class="brand-meta-pill">✨ 8 modelli disponibili</span>
         <span class="brand-meta-pill">🛡 Originali garantiti</span>
       </div>
-      <div class="brand-colors" id="rbColors">
+      <div class="brand-colors" id="cgColors">
         <span class="brand-colors__label">Colori</span>
       </div>
     </div>
@@ -137,7 +51,7 @@
   <!-- BRAND INFO + SPECS -->
   <section style="padding:4rem 0;background:var(--bg);">
     <div class="container grid-2">
-      <div class="reveal rb-sticky-col">
+      <div class="reveal cg-sticky-col">
         <h2 style="font-family:var(--font-h);font-size:1.8rem;font-weight:700;margin-bottom:1.2rem;">Perché scegliere <span class="text-gold-gradient">Ray-Ban</span></h2>
         <p style="color:var(--muted);line-height:1.8;margin-bottom:1.5rem;">Ray-Ban è il marchio di occhiali più iconico al mondo. Fondato nel 1937 per i piloti dell'aeronautica americana, oggi è sinonimo di stile autentico e qualità senza compromessi. Ogni paio di Ray-Ban racconta una storia di libertà e personalità.</p>
         <ul style="list-style:none;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
@@ -155,30 +69,30 @@
           </table>
         </div>
       </div>
-      <div class="reveal" style="transition-delay:.15s">
-        <div class="rb-story__track" id="rbStoryTrack">
-          <div class="rb-story__sticky" id="rbStorySticky">
-            <canvas class="rb-story__canvas" id="rbStoryCanvas"></canvas>
-            <div class="rb-story__copy">
-              <div class="rb-step on" data-step="0" id="rbStep0">
-                <p class="rb-step__eyebrow">Il modello</p>
-                <h3 class="rb-step__title">Wayfarer</h3>
-                <p class="rb-step__text">La forma più riconoscibile di Ray-Ban, nata nel 1952 e mai passata di moda: linee decise e un carattere unico.</p>
+            <div class="reveal" style="transition-delay:.15s">
+        <div class="cg-story__track" id="cgStoryTrack">
+          <div class="cg-story__sticky" id="cgStorySticky">
+            <canvas class="cg-story__canvas" id="cgStoryCanvas"></canvas>
+            <div class="cg-story__copy">
+              <div class="cg-step on" data-step="0">
+                <p class="cg-step__eyebrow">Il modello</p>
+                <h3 class="cg-step__title">Montatura pilot</h3>
+                <p class="cg-step__text">Linea pilot in acetato havana con lenti sfumate e doppio ponte: il design Ray-Ban che non passa mai di moda.</p>
               </div>
-              <div class="rb-step" data-step="1" id="rbStep1">
-                <p class="rb-step__eyebrow">Dentro la montatura</p>
-                <h3 class="rb-step__title">Ogni dettaglio conta</h3>
-                <p class="rb-step__text">Acetato lucido, rivetti dorati, aste rinforzate: la qualità costruttiva si vede e si sente al tatto.</p>
+              <div class="cg-step" data-step="1">
+                <p class="cg-step__eyebrow">Dentro la montatura</p>
+                <h3 class="cg-step__title">Ogni dettaglio conta</h3>
+                <p class="cg-step__text">Acetato lucido, aste rinforzate con logo e doppio ponte: la qualità costruttiva si vede e si sente al tatto.</p>
               </div>
-              <div class="rb-step" data-step="2" id="rbStep2">
-                <p class="rb-step__eyebrow">Perché sceglierlo</p>
-                <h3 class="rb-step__title">Tocca per i dettagli</h3>
-                <p class="rb-step__text">Scopri i vantaggi di ogni componente: lenti, montatura, aste, ponte e rivetti.</p>
+              <div class="cg-step" data-step="2">
+                <p class="cg-step__eyebrow">Perché sceglierlo</p>
+                <h3 class="cg-step__title">Tocca per i dettagli</h3>
+                <p class="cg-step__text">Scopri i vantaggi di ogni componente: lenti, montatura, aste e doppio ponte.</p>
               </div>
-              <div class="rb-step rb-step--hover" id="rbHoverInfo">
-                <p class="rb-step__eyebrow" id="rbHoverEyebrow">Dettaglio</p>
-                <h3 class="rb-step__title" id="rbHoverTitle">—</h3>
-                <p class="rb-step__text" id="rbHoverText">—</p>
+              <div class="cg-step cg-step--hover" id="cgHoverInfo">
+                <p class="cg-step__eyebrow" id="cgHoverEyebrow">Dettaglio</p>
+                <h3 class="cg-step__title" id="cgHoverTitle">—</h3>
+                <p class="cg-step__text" id="cgHoverText">—</p>
               </div>
             </div>
           </div>
@@ -187,7 +101,7 @@
     </div>
   </section>
 
-  <!-- GALLERIA FOTO OCCHIALI RAY-BAN (stessa di Burberry: usa brand-carousel.css/js)
+  <!-- GALLERIA FOTO OCCHIALI BURBERRY
        Per aggiungere foto: caricale in images/ come ray-ban-1.jpeg … ray-ban-6.jpeg
        (le foto che non esistono vengono nascoste in automatico) -->
   <section class="brand-gallery" data-brand-gallery>
@@ -239,18 +153,20 @@
   <section style="padding:3rem 0;background:var(--bg);">
     <div class="container" style="text-align:center;">
       <h3 style="font-family:var(--font-h);font-size:1.4rem;font-weight:700;margin-bottom:.5rem;">Scopri anche gli altri brand</h3>
-      <p style="color:var(--muted);margin-bottom:1.5rem;font-size:.9rem;">EmiFotoOttica propone 11 marchi selezionati per tutti i gusti</p>
+      <p style="color:var(--muted);margin-bottom:1.5rem;font-size:.9rem;">EmiFotoOttica propone 16 marchi selezionati per tutti i gusti</p>
       <a href="occhiali.html" class="btn-gold">Vedi tutti i brand →</a>
     </div>
   </section>
 
   <div id="site-footer"></div>
   <script>
-    document.getElementById('year').textContent=new Date().getFullYear();
     const _obs=new IntersectionObserver((e)=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');_obs.unobserve(x.target);}})},{threshold:.12});
     document.querySelectorAll('.reveal').forEach(el=>_obs.observe(el));
   </script>
+  <script>
+    window.CLASSIC_GLASSES = { shape: "pilot", detail: "rayban", colors: [{ name: "Havana", hex: 0xffffff, swatch: "#6b3f1a" }, { name: "Nero", hex: 0x2a2a2c, swatch: "#1c1c1e" }, { name: "Blu", hex: 0x7f9fcf, swatch: "#2b4a7a" }] };
+  </script>
   <script src="brand-carousel.js?v=2"></script>
-  <script type="module" src="ray-ban-3d.js"></script>
+  <script type="module" src="classic-glasses.js"></script>
 </body>
 </html>
