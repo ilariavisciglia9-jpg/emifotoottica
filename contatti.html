@@ -137,7 +137,7 @@
 
   <div id="site-footer"></div>
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
+    var _y = document.getElementById('year'); if (_y) _y.textContent = new Date().getFullYear();
     const _obs = new IntersectionObserver((e)=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('visible');_obs.unobserve(x.target);}})},{threshold:.12});
     document.querySelectorAll('.reveal').forEach(el=>_obs.observe(el));
 
