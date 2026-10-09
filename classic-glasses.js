@@ -188,6 +188,8 @@ function buildModel(color) {
     case 'oversized': return makeOversizedClassic(color);
     case 'rhinestone': return makeRhinestoneClassic(color);
     case 'pantos': return makePantosClassic(color);
+    case 'aviator': return makeAviatorClassic(color);
+    case 'pilot': return makePilotClassic(color);
     case 'wraparound': return makeWraparoundClassic(color, cfg.detail);
     default: return makeWayfarerClassic(color);
   }
@@ -427,6 +429,148 @@ function makeWraparoundClassic(frameColor, detail) {
   return m;
 }
 
+/* ============ NUOVI MODELLI: RH+ (aviator a specchio) e Polaroid (pilot havana) ============ */
+function seeded(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function gradTexture(stops, diagonal) {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const ctx = c.getContext('2d');
+  const g = diagonal ? ctx.createLinearGradient(0, 256, 256, 0) : ctx.createLinearGradient(0, 0, 0, 256);
+  stops.forEach(([o, col]) => g.addColorStop(o, col));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function lensGeoFrom(pts, scale) {
+  const g = new THREE.ShapeGeometry(shapeFrom(pts.map(p => p.clone().multiplyScalar(scale))), 48);
+  const pos = g.attributes.position; let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  for (let i = 0; i < pos.count; i++) { x0 = Math.min(x0, pos.getX(i)); x1 = Math.max(x1, pos.getX(i)); y0 = Math.min(y0, pos.getY(i)); y1 = Math.max(y1, pos.getY(i)); }
+  const uv = new Float32Array(pos.count * 2);
+  for (let i = 0; i < pos.count; i++) { uv[i * 2] = (pos.getX(i) - x0) / (x1 - x0); uv[i * 2 + 1] = (pos.getY(i) - y0) / (y1 - y0); }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return g;
+}
+const ringTube = (pts, r) => {
+  const sub = pts.filter((_, i) => i % 4 === 0);
+  const c = new THREE.CatmullRomCurve3(sub.map(p => new THREE.Vector3(p.x, p.y, 0)), true);
+  return new THREE.TubeGeometry(c, sub.length * 3, r, 8, true);
+};
+
+/* --- RH+: aviator in metallo nero, doppio ponte, lenti a specchio arancio, punte rosse --- */
+function makeAviatorClassic(frameColor) {
+  const m = newModel();
+  const metal = new THREE.MeshPhysicalMaterial({ color: frameColor, roughness: .32, metalness: .75, clearcoat: .6, clearcoatRoughness: .2, envMapIntensity: 1.2 });
+  const tipMat = new THREE.MeshStandardMaterial({ color: 0xe8431f, roughness: .4, metalness: .1 });
+  const lens = new THREE.MeshPhysicalMaterial({
+    map: gradTexture([[0, '#c8431f'], [.45, '#ef6a3d'], [.8, '#f5a53a'], [1, '#f7c64a']], true),
+    roughness: .05, metalness: .35, transparent: true, opacity: .9, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.8
+  });
+  const padMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: .1, transparent: true, opacity: .45 });
+
+  let outline = flattenTop(superPoints(.82, .6, 3.1, 0, 128), .6, .97, .45);
+  outline = outline.map(p => new THREE.Vector2(p.x * (1 + .08 * (p.y / .6)), p.y));
+  const rimGeo = ringTube(outline, .03);
+  const lensGeo = lensGeoFrom(outline, .99);
+  const X = 1.05;
+
+  for (const [sd, id] of [[-1, 'L'], [1, 'R']]) {
+    const rim = new THREE.Mesh(rimGeo, metal); rim.position.set(sd * X, 0, 0);
+    const pad = new THREE.Mesh(new THREE.SphereGeometry(.05, 12, 12), padMat);
+    pad.scale.set(.5, 1.2, .5); pad.position.set(-sd * .76, -.2, .06); rim.add(pad);
+    m.add('rim' + id, rim, [sd * .9, .35, .5], [.15, sd * .35, -sd * .1], .08);
+    const ln = new THREE.Mesh(lensGeo, lens); ln.position.set(sd * X, 0, .005);
+    m.add('lens' + id, ln, [sd * .6, -.1, 1.9], [0, sd * .15, 0], 0);
+
+    const curve = [[0, 0, 0], [0, 0, -.8], [0, 0, -1.8], [0, -.03, -2.2]];
+    const temple = new THREE.Mesh(tube(curve, .03, 50, 10), metal);
+    temple.position.set(sd * 1.9, .25, 0);
+    const tip = new THREE.Mesh(tube([[0, -.03, -2.12], [0, -.12, -2.4], [0, -.26, -2.62]], .06, 24, 10), tipMat);
+    temple.add(tip);
+    m.add('temple' + id, temple, [sd * 1.1, .1, -1.3], [0, -sd * .25, 0], .03);
+  }
+
+  const brow = new THREE.Group();
+  brow.add(new THREE.Mesh(tube([[-1.9, .72, 0], [-1.2, .79, 0], [0, .82, 0], [1.2, .79, 0], [1.9, .72, 0]], .028, 48, 8), metal));
+  for (const x of [-1.74, -.36, .36, 1.74]) brow.add(new THREE.Mesh(tube([[x, .76, 0], [x, .66, 0], [x, .56, 0]], .026, 8, 8), metal));
+  m.add('brow', brow, [0, 1.1, .6], [.35, 0, 0], .12);
+
+  const bridge = new THREE.Mesh(tube([[-.26, .3, 0], [-.1, .36, 0], [.1, .36, 0], [.26, .3, 0]], .03, 24, 8), metal);
+  m.add('bridge', bridge, [0, 1.3, .9], [.5, 0, 0], .15);
+
+  m.frameMat = metal;
+  m.labels = [
+    { text: 'Lenti', side: 'r', part: 'lensR', title: 'Lenti a specchio', info: 'Lenti specchiate arancio con protezione UV 100%: riducono i riflessi e il bagliore, per la massima nitidezza anche in piena luce.' },
+    { text: 'Montatura', side: 'l', part: 'rimL', title: 'Montatura in metallo', info: 'Struttura sottile in metallo, leggera e resistente, con linea aviator sportiva e doppio ponte.' },
+    { text: 'Aste', side: 'r', part: 'templeR', title: 'Aste con punte colorate', info: 'Aste sottili con punte rosse: tenuta salda e comfort anche durante lo sport.' },
+    { text: 'Ponte', side: 'l', part: 'bridge', title: 'Ponte e nasello', info: 'Ponte in metallo con naselli morbidi per distribuire il peso e restare comodo a lungo.' }
+  ];
+  return m;
+}
+
+/* --- Polaroid: pilot in acetato havana, lenti sfumate blu, punta arcobaleno --- */
+function makeTortoiseTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const ctx = c.getContext('2d'), rnd = seeded(7);
+  ctx.fillStyle = '#6a431f'; ctx.fillRect(0, 0, 512, 512);
+  try { ctx.filter = 'blur(7px)'; } catch (e) {}
+  for (let i = 0; i < 230; i++) {
+    const x = rnd() * 512, y = rnd() * 512, rx = 12 + rnd() * 46, ry = 8 + rnd() * 30, dark = rnd() < .5;
+    ctx.fillStyle = dark ? 'rgba(30,15,6,.55)' : 'rgba(214,150,58,.5)';
+    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rnd() * Math.PI, 0, Math.PI * 2); ctx.fill();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(.7, .7);
+  return t;
+}
+function makeRainbowTexture() {
+  const c = document.createElement('canvas'); c.width = 16; c.height = 80;
+  const ctx = c.getContext('2d');
+  ['#e63a2e', '#f08a24', '#f4d03a', '#3fa84a', '#2f6fd0'].forEach((col, i) => { ctx.fillStyle = col; ctx.fillRect(0, i * 16, 16, 16); });
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function makePilotClassic(frameColor) {
+  const m = newModel();
+  const tex = makeTortoiseTexture();
+  const acetate = new THREE.MeshPhysicalMaterial({ color: frameColor, map: tex, roughness: .3, metalness: 0, clearcoat: .6, clearcoatRoughness: .15, envMapIntensity: .8 });
+  const lens = new THREE.MeshPhysicalMaterial({
+    map: gradTexture([[0, '#2f58b0'], [.5, '#7399d8'], [1, '#dfe8f2']], false),
+    roughness: .05, metalness: .15, transparent: true, opacity: .82, side: THREE.DoubleSide, depthWrite: false, clearcoat: 1, envMapIntensity: 1.6
+  });
+  const rainbow = new THREE.MeshBasicMaterial({ map: makeRainbowTexture() });
+
+  const outer = flattenTop(superPoints(.92, .7, 2.5, .2, 128), .7, .95, .5);
+  const inner = flattenTop(superPoints(.76, .53, 2.4, .18, 128), .53, .93, .48).map(p => new THREE.Vector2(p.x, p.y - .07));
+  const rimShape = shapeFrom(outer); rimShape.holes.push(pathFrom(inner));
+  const rimGeo = new THREE.ExtrudeGeometry(rimShape, { depth: .2, bevelEnabled: true, bevelThickness: .04, bevelSize: .035, bevelSegments: 4, steps: 1 });
+  rimGeo.translate(0, 0, -.1);
+  const lensGeo = lensGeoFrom(inner, 1.04);
+  const X = 1.12;
+
+  for (const [sd, id] of [[-1, 'L'], [1, 'R']]) {
+    const rim = new THREE.Mesh(rimGeo, acetate); rim.position.set(sd * X, 0, 0);
+    const ln = new THREE.Mesh(lensGeo, lens); ln.position.set(sd * X, 0, .02);
+    m.add('rim' + id, rim, [sd * .9, .35, .5], [.15, sd * .35, -sd * .1], .08);
+    m.add('lens' + id, ln, [sd * .6, -.1, 1.9], [0, sd * .15, 0], 0);
+
+    const curve = [[0, 0, 0], [0, 0, -.6], [0, 0, -1.6], [-sd * .02, 0, -2.1], [-sd * .05, -.15, -2.5], [-sd * .06, -.4, -2.75]];
+    const temple = new THREE.Mesh(tube(curve, .07, 60, 12), acetate);
+    temple.position.set(sd * 1.98, .2, -.02); temple.scale.set(.75, 1.7, 1);
+    const tip = new THREE.Mesh(new THREE.BoxGeometry(.12, .05, .22), rainbow);
+    tip.position.set(-sd * .06, -.42, -2.7); tip.rotation.x = -.35;
+    temple.add(tip);
+    m.add('temple' + id, temple, [sd * 1.1, .1, -1.3], [0, -sd * .25, 0], .03);
+  }
+  const bridge = new THREE.Mesh(tube([[-.32, .3, 0], [-.14, .46, 0], [.14, .46, 0], [.32, .3, 0]], .09, 32, 12), acetate);
+  m.add('bridge', bridge, [0, 1.3, .9], [.5, 0, 0], .15);
+
+  m.frameMat = acetate;
+  m.labels = [
+    { text: 'Lenti', side: 'r', part: 'lensR', title: 'Lenti polarizzate', info: 'Lenti polarizzate sfumate con protezione UV 100%: eliminano i riflessi e migliorano il contrasto dei colori.' },
+    { text: 'Montatura', side: 'l', part: 'rimL', title: 'Montatura havana', info: 'Acetato havana lucido dalla forma pilot, leggero e dal carattere deciso.' },
+    { text: 'Aste', side: 'r', part: 'templeR', title: 'Punta arcobaleno', info: 'Aste in acetato con la caratteristica punta multicolore Polaroid.' },
+    { text: 'Ponte', side: 'l', part: 'bridge', title: 'Ponte anatomico', info: 'Ponte rinforzato che distribuisce il peso in modo uniforme sul naso.' }
+  ];
+  return m;
+}
+
 function explode(model, e) {
   for (const p of model.parts) {
     const k = smooth(p.delay, 1, e);
@@ -500,7 +644,7 @@ const models = [];
     model.group.rotation.y = lerp(-0.9, 0, introEase) + (reduced ? 0 : Math.sin(time * .5) * .12);
     model.group.rotation.x = .05 + (reduced ? 0 : Math.sin(time * .4) * .03);
     model.group.position.y = reduced ? 0 : Math.sin(time * .8) * .05;
-    model.group.scale.setScalar(lerp(.55, 1, introEase));
+    model.group.scale.setScalar(lerp(.55, 1, introEase) * (cfg.heroScale || 1));
     stage.classList.toggle('ready', introEase > .05);
 
     renderer.render(scene, camera);
@@ -649,7 +793,7 @@ const models = [];
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'brand-color-dot' + (i === 0 ? ' active' : '');
-    b.style.background = '#' + c.hex.toString(16).padStart(6, '0');
+    b.style.background = c.swatch || ('#' + c.hex.toString(16).padStart(6, '0'));
     b.title = c.name;
     b.addEventListener('click', () => {
       wrap.querySelectorAll('.brand-color-dot').forEach(el => el.classList.remove('active'));
