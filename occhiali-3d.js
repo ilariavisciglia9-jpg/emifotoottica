@@ -147,17 +147,19 @@ const canvas  = document.getElementById('glassesCanvas');
 const hint    = document.getElementById('glHint');
 const steps   = [...stage.querySelectorAll('.gl-step')];
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const coarse = matchMedia('(hover: none)').matches; // telefono/tablet: qualità più leggera
 
 let renderer;
 try {
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: !coarse, alpha: true, powerPreference: 'high-performance' });
 } catch (err) {
   console.warn('WebGL non disponibile', err);
 }
 
+if (!renderer) section.style.display = 'none'; // senza WebGL la sezione non serve
 if (renderer) {
   section.classList.add('ready');
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, coarse ? 1.5 : 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.setClearColor(0x000000, 0);
@@ -382,12 +384,12 @@ if (renderer) {
   function createMiniScene(canvasEl) {
     let r;
     try {
-      r = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true, powerPreference: 'high-performance' });
+      r = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: !coarse, alpha: true, powerPreference: 'high-performance' });
     } catch (err) {
       console.warn('WebGL non disponibile', err);
       return null;
     }
-    r.setPixelRatio(Math.min(devicePixelRatio, 2));
+    r.setPixelRatio(Math.min(devicePixelRatio, coarse ? 1.5 : 2));
     r.toneMapping = THREE.ACESFilmicToneMapping;
     r.toneMappingExposure = 1.05;
     r.setClearColor(0x000000, 0);
@@ -420,16 +422,23 @@ if (renderer) {
     if (!sec || !cnv) return;
     const stg = cnv.parentElement;
 
-    const mini = createMiniScene(cnv);
-    if (!mini) { stg.classList.add('no-webgl'); return; }
-
-    const model = buildModel();
-    mini.scene.add(model.group);
+    let mini = null, model = null, built = false;
+    function build() {
+      if (built) return; built = true;
+      mini = createMiniScene(cnv);
+      if (!mini) { stg.classList.add('no-webgl'); return; }
+      model = buildModel();
+      mini.scene.add(model.group);
+      stg.classList.add('ready');
+    }
+    // VELOCITÀ: la scena 3D si crea solo quando la sezione sta per entrare nello schermo
+    const pre = new IntersectionObserver(([en]) => { if (en.isIntersecting) { pre.disconnect(); build(); } }, { rootMargin: '400px 0px' });
+    pre.observe(sec);
 
     let isActive = false, isRunning = false, lastTime = 0, t0 = null;
 
     function frame(now) {
-      if (!isActive) { isRunning = false; return; }
+      if (!isActive || !mini) { isRunning = false; return; }
       requestAnimationFrame(frame);
       if (t0 === null) t0 = now;
       const time = (now - t0) / 1000;
@@ -443,7 +452,6 @@ if (renderer) {
       }
       onFrame && onFrame(model, time, mini);
 
-      mini.resize();
       mini.renderer.render(mini.scene, mini.camera);
     }
 
@@ -452,7 +460,8 @@ if (renderer) {
       stg.classList.toggle('in-view', isActive);
       const copy = sec.querySelector('.glf-copy');
       if (copy) copy.classList.toggle('in-view', isActive);
-      if (isActive && !isRunning) { isRunning = true; lastTime = performance.now(); requestAnimationFrame(frame); }
+      if (isActive) build();
+      if (isActive && mini && !isRunning) { isRunning = true; lastTime = performance.now(); requestAnimationFrame(frame); }
     }, { threshold: .3 }).observe(sec);
   }
 

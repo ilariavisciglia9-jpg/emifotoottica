@@ -1,6 +1,7 @@
 /* EmiFotoOttica – sezione 3D occhiali (scroll) */
-.glasses-scroll{display:none;position:relative;height:520vh;background:var(--navy,#0a2540);}
-.glasses-scroll.ready{display:block;}
+.glasses-scroll{display:block;position:relative;height:520vh;background:var(--navy,#0a2540);}
+.glasses-canvas,.glf-canvas{opacity:0;transition:opacity .8s ease;}
+.glasses-scroll.ready .glasses-canvas,.glf-stage.ready .glf-canvas{opacity:1;}
 .glasses-sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;
   background:
     radial-gradient(ellipse 60% 50% at 50% 42%, rgba(201,162,75,.18), transparent 70%),
