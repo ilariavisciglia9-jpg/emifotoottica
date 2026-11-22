@@ -20,7 +20,7 @@
   {"imports":{"three":"./three.module.min.js"}}
   </script>
   <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"LocalBusiness","name":"EmiFotoOttica","description":"Ottica e servizi fotografici a Roma dal 1960","address":{"@type":"PostalAddress","streetAddress":"Via Francesco Merlini 23/25","addressLocality":"Roma","addressCountry":"IT"},"telephone":"+393517774492","email":"info@emifotoottica.it","url":"https://www.emifotoottica.it","openingHours":["Mo-Fr 09:00-13:00","Mo-Fr 15:30-19:30","Sa 09:00-13:00"]}
+  {"@context":"https://schema.org","@type":["Optician","LocalBusiness"],"name":"EmiFotoOttica","description":"Ottica e servizi fotografici a Roma dal 1960","address":{"@type":"PostalAddress","streetAddress":"Via Francesco Merlini 23/25","addressLocality":"Roma","addressCountry":"IT","postalCode":"00133","addressRegion":"RM"},"telephone":"+393517774492","email":"info@emifotoottica.it","url":"https://www.emifotoottica.it","openingHours":["Mo-Fr 09:00-13:00","Mo-Fr 15:30-19:30","Sa 09:00-13:00"],"geo":{"@type":"GeoCoordinates","latitude":41.8682523,"longitude":12.6424944},"hasMap":"https://www.google.com/maps/place/?q=place_id:ChIJN9AhtEF9LxMRfXVj4WQiMjg","image":"https://www.emifotoottica.it/images/home-1.jpg"}
   </script>
   <link rel="icon" type="image/png" href="images/favicon.png?v=3">
   <link rel="apple-touch-icon" href="images/favicon.png?v=3">
@@ -303,6 +303,36 @@
       </div>
     </div>
   </section>
+
+  <!-- RECENSIONI GOOGLE -->
+  <section id="recensioni" style="padding:5rem 0;background:var(--bg);" aria-label="Recensioni dei clienti">
+    <div class="container">
+      <h2 class="section-title reveal">Cosa dicono <span class="text-gold-gradient">i nostri clienti</span></h2>
+      <p class="reveal" style="text-align:center;margin-top:1rem;color:var(--text);opacity:.75;">Le recensioni dei clienti di EmiFotoOttica su Google, nel nostro negozio di Via Francesco Merlini a Roma.</p>
+      <div class="grid-3" style="margin-top:3rem;">
+        <div class="card reveal" style="transition-delay:0.0s;text-align:left;">
+          <div aria-hidden="true" style="font-family:var(--font-h);font-size:3rem;line-height:1;color:var(--gold);margin-bottom:.4rem;">“</div>
+          <p class="card__desc" style="font-style:italic;">“Cortesia e professionalità sono il marchio di questo negozio. Può sembrare piccolo, ma per chi ha bisogno di un nuovo paio di occhiali è davvero il posto giusto: dal classico al moderno, dall'elegante allo stravagante, ci sono montature per tutti i gusti.”</p>
+          <p style="margin-top:1.2rem;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);">Recensione Google</p>
+        </div>
+        <div class="card reveal" style="transition-delay:0.1s;text-align:left;">
+          <div aria-hidden="true" style="font-family:var(--font-h);font-size:3rem;line-height:1;color:var(--gold);margin-bottom:.4rem;">“</div>
+          <p class="card__desc" style="font-style:italic;">“Personale estremamente cortese, qualificato e professionale. Prodotti di alta qualità e prezzi assolutamente onesti.”</p>
+          <p style="margin-top:1.2rem;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);">Recensione Google</p>
+        </div>
+        <div class="card reveal" style="transition-delay:0.2s;text-align:left;">
+          <div aria-hidden="true" style="font-family:var(--font-h);font-size:3rem;line-height:1;color:var(--gold);margin-bottom:.4rem;">“</div>
+          <p class="card__desc" style="font-style:italic;">“Professionalità, garanzia ed educazione, ma soprattutto competenza nel consigliare per qualsiasi situazione ottica.”</p>
+          <p style="margin-top:1.2rem;font-size:.8rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-dark);">Recensione Google</p>
+        </div>
+      </div>
+      <div class="reveal" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:3rem;">
+        <a href="https://www.google.com/maps/place/?q=place_id:ChIJN9AhtEF9LxMRfXVj4WQiMjg" target="_blank" rel="noopener" class="btn-secondary">Leggi tutte le recensioni su Google</a>
+        <a href="https://search.google.com/local/writereview?placeid=ChIJN9AhtEF9LxMRfXVj4WQiMjg" target="_blank" rel="noopener" class="btn-gold">Lascia la tua recensione</a>
+      </div>
+    </div>
+  </section>
+
 
   <!-- CTA FINALE -->
   <div class="cta-dark">
