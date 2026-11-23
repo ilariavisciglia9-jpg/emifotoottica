@@ -60,3 +60,78 @@
 .footer__contacts{row-gap:.5rem;}
 .footer__bottom{padding-top:.85rem !important;padding-bottom:.85rem !important;}
 .footer__bottom .container{font-size:.8rem;}
+
+/* ============================================================
+   PALETTE SENZA BLU
+   - Homepage (body.home): fondi blu → bianco, testi bianco/oro → nero/verde
+   - Altre pagine: fondi blu → verde pastello, testi bianchi → scuri
+   Blocco additivo: per tornare indietro basta cancellarlo
+   (e togliere class="home" dal <body> di index.html).
+   ============================================================ */
+:root{
+  --navy:#1B1F1C;--navy-light:#2A302B;--text:#1B1F1C;
+  --verde:#35584C;--verde-chiaro:#5E8C72;--verde-scuro:#2A473D;
+  --verde-pastello:#DCEBDF;
+  --sh:0 4px 24px rgba(27,31,28,.10);--sh-lg:0 12px 48px rgba(27,31,28,.16);
+  --ink:#1B1F1C;--ink-soft:rgba(27,31,28,.72);--ink-line:rgba(27,31,28,.12);
+}
+body{--sez-bg:var(--verde-pastello);}
+body.home{--sez-bg:#fff;--gold:var(--verde);--gold-light:var(--verde-chiaro);--gold-dark:var(--verde-scuro);}
+
+/* Sezioni che prima erano blu */
+:is([style*="background:var(--navy)"],footer,.navbar__mobile,.mobile-nav,.brands-strip,.brand-hero,.cta-dark,.pdf-cta,
+    .glf-section,.glf-section.glf-reverse,.glasses-scroll,.cg-story__sticky,.brand-gallery__slide--ph){background:var(--sez-bg) !important;}
+.glasses-sticky{background:radial-gradient(ellipse 60% 50% at 50% 42%,rgba(53,88,76,.08),transparent 70%),var(--sez-bg) !important;}
+.cg-story__sticky{background:radial-gradient(ellipse 60% 50% at 50% 40%,rgba(255,255,255,.55),transparent 70%),var(--sez-bg) !important;}
+.glf-stage{background:radial-gradient(ellipse 65% 55% at 50% 45%,rgba(53,88,76,.08),transparent 70%) !important;}
+/* oro leggibile sul verde pastello (pagine interne) */
+body:not(.home) :is([style*="background:var(--navy)"],footer,.brands-strip,.brand-hero,.cta-dark,.pdf-cta,.cg-story__sticky,.brand-gallery__slide--ph){--gold:#8B6010;--gold-light:#B5862E;}
+.home footer{border-top:1px solid var(--ink-line);}
+
+/* Testi bianchi → scuri dentro quelle sezioni */
+:is([style*="background:var(--navy)"],.cta-dark,.pdf-cta) :is([style*="color:#fff"],h1,h2,h3,blockquote){color:var(--ink) !important;}
+:is([style*="background:var(--navy)"],.cta-dark,.pdf-cta) [style*="color:rgba(255,255,255"]{color:var(--ink-soft) !important;}
+footer,.footer__title{color:var(--ink);}
+.footer__title{color:var(--gold);}
+.footer__desc,.footer__links a,.footer__ci,.footer__ci a,.cta-dark p,.pdf-cta__desc,.stat-block__label,.brand-hero__desc,
+.gl-text,.glf-text,.cg-step__text,.brand-gallery__ph-txt,.navbar__mobile a,.mobile-nav__panel a{color:var(--ink-soft) !important;}
+.footer__bottom{color:rgba(27,31,28,.5) !important;border-top-color:var(--ink-line) !important;}
+.brand-hero__name,.pdf-cta__title,.gl-title,.glf-title,.cg-step__title,.brand-gallery__ph-name,.mobile-nav__link,.mobile-nav__toggle,
+.gl-label,.gl-label span,.cg-label span,.glf-label{color:var(--ink) !important;}
+.navbar__mobile a,.mobile-nav__link,.mobile-nav__toggle{border-bottom-color:var(--ink-line) !important;}
+.brands-strip span{color:rgba(27,31,28,.35);} .brands-strip span:hover{color:rgba(27,31,28,.65);}
+.brand-meta-pill{background:rgba(255,255,255,.55) !important;border-color:var(--ink-line) !important;color:var(--ink-soft) !important;}
+.brand-colors__label{color:var(--ink-soft) !important;}
+.brand-color-dot{border-color:rgba(27,31,28,.25);}
+.gl-hint{color:var(--ink-soft);}
+.glf-photo-pills span{color:var(--ink-soft);background:rgba(27,31,28,.04);border-color:var(--ink-line);}
+.glf-photo-pills span.on{color:#fff;background:var(--verde);border-color:var(--verde);}
+.glf-label{background:rgba(53,88,76,.1);border-color:rgba(53,88,76,.45);}
+.pdf-cta{border-color:var(--ink-line) !important;}
+@media (max-width:900px){
+  .cg-story__copy{background:linear-gradient(180deg,rgba(220,235,223,0) 0%,rgba(220,235,223,.6) 28%,rgba(220,235,223,.95) 60%,rgba(220,235,223,.98) 100%) !important;}
+}
+
+/* Homepage: bottoni e icone verdi con testo bianco */
+.home .btn-gold,.home .glasses-btn.active,.home .btn-camera.start,.home .mission-badge,.home .step__num{color:#fff;}
+.home :is(.card__icon,.info-card__icon,.mission-val__icon,.pdf-cta__icon) svg{color:#fff;}
+.home .gl-label::before,.home .cg-label::before{box-shadow:0 0 0 4px rgba(53,88,76,.2);}
+.home .gl-label span{border-bottom-color:rgba(53,88,76,.6);}
+.home .card:hover,.home .brand-card:hover,.home .info-card:hover{border-color:rgba(53,88,76,.4);}
+.home .novita-popup-badge,.home .novita-popup-cta{background:var(--verde) !important;}
+.home .novita-popup-body h3,.home .novita-popup-tags span{color:var(--ink) !important;}
+
+/* Altri residui di blu */
+.navbar__links a,.mega-menu__col a{color:var(--ink);}
+.navbar__burger span{background:var(--ink);}
+.site-header{border-bottom-color:var(--ink-line);box-shadow:0 2px 14px rgba(27,31,28,.06);}
+.mega-menu__photo p{background:linear-gradient(to top,rgba(20,24,21,.85),transparent);}
+.hero__overlay{background:linear-gradient(to right,rgba(20,24,21,.85),rgba(20,24,21,.3)) !important;}
+.img-card__overlay{background:linear-gradient(to top,rgba(20,24,21,.8),transparent 60%) !important;}
+.tag{background:rgba(53,88,76,.1);}
+.btn-camera.next{background:rgba(27,31,28,.08);}
+.status-badge.blue{background:var(--verde-pastello);color:var(--verde-scuro);}
+.cta-dark .btn-outline{border-color:rgba(27,31,28,.35);color:var(--ink);}
+.cta-dark .btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.brand-hero a:not([class]){color:var(--ink-soft) !important;}
+.brand-hero a:not([class]):hover{color:var(--ink) !important;}
